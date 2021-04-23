@@ -686,5 +686,5 @@ class deep_3d_inversor(object):
                 t.set_postfix(loss=loss_L2_avg, lr=current_lr)
             
 
-deep_inversor = deep_3d_inversor(batch_size=128, n_training=50000, n_validation=2000, n_pixels=32)
+deep_inversor = deep_3d_inversor()
 deep_inversor.optimize(50, lr=3e-4)
