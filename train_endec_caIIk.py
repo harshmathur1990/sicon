@@ -11,7 +11,8 @@ from tqdm import tqdm
 import model_encdec as model
 import time
 import shutil
-import database
+# import database
+import pandas as pd
 import nvidia_smi
 import os
 from pathlib import Path
@@ -587,7 +588,7 @@ class deep_3d_inversor(object):
         # np.savez('{0}.normalization'.format(self.out_name), minimum=self.dataset_train.phys_min, maximum=self.dataset_train.phys_max)        
 
         # Open the index database
-        self.db = database.neural_db(label=self.out_name, lr=self.lr, root=root)
+        # self.db = database.neural_db(label=self.out_name, lr=self.lr, root=root)
 
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.lr)
         self.lossfn_L2 = nn.MSELoss().to(self.device)
@@ -601,6 +602,10 @@ class deep_3d_inversor(object):
         best_loss = -1e10
 
         trainF = open('{0}.loss.csv'.format(self.out_name, self.lr), 'w')
+
+        data = {'epoch':[], 'loss_l2': [], 'loss_l2_val': []}
+
+        self.db = pd.DataFrame(data)
 
         for epoch in range(1, epochs + 1):
             self.scheduler.step()
@@ -621,8 +626,19 @@ class deep_3d_inversor(object):
                 'optimizer': self.optimizer.state_dict(),
             }, is_best, filename='{0}.pth'.format(self.out_name, self.lr))
 
-            self.db.update(epoch, self.loss_L2[-1], self.loss_L2_val[-1])
+            # self.db.update(epoch, self.loss_L2[-1], self.loss_L2_val[-1])
 
+            data = {'epoch':[epoch], 'loss_l2': [self.loss_L2[-1]], 'loss_l2_val': [self.loss_L2_val[-1]]}
+
+            self.db = self.db.append(pd.DataFrame(data))
+
+        self.db.to_hdf(
+            'label={}_lr={}_root={}.h5'.format(
+                self.out_name, 
+                self.lr, root
+            ),
+            'data'
+        )
         trainF.close()
 
     def train(self, epoch):
