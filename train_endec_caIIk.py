@@ -594,9 +594,9 @@ class dataset_spot(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
 
-        input = (self.profiles[:, index] - self.min_profile) / (self.max_profile - self.min_profile)
+        input = (self.profiles[:, index] - self.min_profile[:, np.newaxis, np.newaxis]) / (self.max_profile[:, np.newaxis, np.newaxis] - self.min_profile[:, np.newaxis, np.newaxis])
 
-        target = (self.model[:, index] - self.min_model) / (self.max_model - self.min_model)
+        target = (self.model[:, index] - self.min_model[:, np.newaxis, np.newaxis]) / (self.max_model[:, np.newaxis, np.newaxis] - self.min_model[:, np.newaxis, np.newaxis])
 
         return input.astype('float32'), target.astype('float32')
 
