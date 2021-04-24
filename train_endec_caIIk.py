@@ -548,7 +548,7 @@ class dataset_spot(torch.utils.data.Dataset):
                 axes=(3, 0, 1, 2)
             )[:, :, 9:41, 9:41]
 
-            self.model = np.vstack([self.temp, self.vlos, self.vturb, self.pgas])
+            self.model = np.vstack([self.temp, self.vlos, self.vturb])  #, self.pgas])
 
         else:
             profiles1, temp1, vlos1, vturb1, pgas1 = get_fov3()
@@ -578,7 +578,7 @@ class dataset_spot(torch.utils.data.Dataset):
                 axes=(3, 0, 1, 2)
             )[:, :, 9:41, 9:41]
 
-            self.model = np.vstack([self.temp, self.vlos, self.vturb, self.pgas])
+            self.model = np.vstack([self.temp, self.vlos, self.vturb])  #  , self.pgas])
 
         self.min_profile = np.min(self.profiles, axis=(1, 2, 3))
 
@@ -590,7 +590,7 @@ class dataset_spot(torch.utils.data.Dataset):
 
         self.in_planes = 30
 
-        self.out_planes = 600
+        self.out_planes = 450
 
     def __getitem__(self, index):
 
