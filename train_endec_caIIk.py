@@ -49,12 +49,6 @@ def get_fov1():
 
     ind = np.where(finputprofiles['profiles'][0, 0, 0, :, 0] != 0)[0]
 
-    data, header = sunpy.io.fits.read(spectra_file_path)[0]
-
-    time_info, header_time = sunpy.io.fits.read(spectra_file_path)[5]
-
-    sys.stdout.write('Read Spectra File\n')
-
     fquiet = h5py.File(quiet_pixel_file, 'r')
 
     a1, b1, c1 = fquiet['pixel_indices'][0:3]
