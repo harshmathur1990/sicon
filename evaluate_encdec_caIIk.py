@@ -217,7 +217,11 @@ class deep_3d_inversor(object):
 
         all_profiles = get_fov3()
 
-        self.stokes = np.transpose(all_profiles, axes=(0, 3, 1, 2))
+        padded_model = np.zeros(21, 64, 64, 30)
+
+        padded_model[:, 0:50, 0:50, :] = all_profiles
+
+        self.stokes = np.transpose(padded_model, axes=(0, 3, 1, 2))
 
         self.stokes = (self.stokes - self.min_profile[np.newaxis, :, np.newaxis, np.newaxis]) / (self.max_profile[np.newaxis, :, np.newaxis, np.newaxis] - self.min_profile[np.newaxis, :, np.newaxis, np.newaxis])
 
@@ -259,9 +263,8 @@ class deep_3d_inversor(object):
             m.write('output_fov_3_neural_net.nc')
 
 if __name__ == '__main__':
-    plt.close('all')
     os.chdir('/home/harsh/CourseworkRepo/stic/example')
     from prepare_data import *
     os.chdir('/home/harsh/CourseworkRepo/sicon')
-    deep_network = deep_3d_inversor(checkpoint='')
+    deep_network = deep_3d_inversor(checkpoint='weights_encdec/2021-04-24-20:53_-lr_0.0003.pth.best')
     deep_network.evaluate()
