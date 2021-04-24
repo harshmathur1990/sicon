@@ -115,6 +115,13 @@ def get_fov1():
 
 
 def get_fov2():
+
+    x = [770, 820]
+
+    y = [338, 388]
+
+    frames = [56, 77]
+
     input_profile_quiet = Path(
         '/home/harsh/OsloAnalysis/new_kmeans/inversions/plots_v1_second_fov/quiet_profiles_frame_56_77_x_770_820_y_338_388.nc'
     )
@@ -287,6 +294,13 @@ def get_fov2():
 
 
 def get_fov3():
+
+    x = [520, 570]
+
+    y = [715, 765]
+
+    frames = [0, 21]
+
     input_profile_quiet = Path(
         '/home/harsh/OsloAnalysis/new_kmeans/inversions/plots_v1_third_fov/quiet_profiles_frame_0_21_x_520_570_y_715_765.nc'
     )
