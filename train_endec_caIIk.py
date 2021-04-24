@@ -568,7 +568,7 @@ class dataset_spot(torch.utils.data.Dataset):
 
             normalise_model_params[:, 0] = self.min_model
 
-            normalise_model_paramsp[:, 1] = self.max_model
+            normalise_model_params[:, 1] = self.max_model
 
             np.savetxt('normalise_profile_params.txt', normalise_profile_params)
 
