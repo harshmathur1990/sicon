@@ -19,7 +19,7 @@ from pathlib import Path
 
 def get_fov1():
 
-    input_profile_path_fov1 = Path(
+    input_profile_path = Path(
         '/home/harsh/OsloAnalysis/new_kmeans/inversions/frame_0_21_x_662_712_y_708_758.nc'
     )
 
