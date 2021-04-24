@@ -13,7 +13,6 @@ import time
 import shutil
 # import database
 import pandas as pd
-import nvidia_smi
 import os
 from pathlib import Path
 
@@ -546,26 +545,17 @@ def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
 
 class deep_3d_inversor(object):
     def __init__(self):
-        self.cuda = torch.cuda.is_available()
-        self.batch_size = batch_size
-        self.device = torch.device("cuda" if self.cuda else "cpu")
-
-        nvidia_smi.nvmlInit()
-        self.handle = nvidia_smi.nvmlDeviceGetHandleByIndex(0) 
-        print("Computing in {0}".format(nvidia_smi.nvmlDeviceGetName(self.handle)))
-               
-        kwargs = {'num_workers': 4, 'pin_memory': True} if self.cuda else {}
 
         self.dataset_train = dataset_spot(mode='train')
-        self.train_loader = torch.utils.data.DataLoader(self.dataset_train, shuffle=True, **kwargs)
+        self.train_loader = torch.utils.data.DataLoader(self.dataset_train, shuffle=True)
 
         self.dataset_test = dataset_spot(mode='test')
-        self.test_loader = torch.utils.data.DataLoader(self.dataset_test, shuffle=True, **kwargs)  
+        self.test_loader = torch.utils.data.DataLoader(self.dataset_test, shuffle=True)  
 
         self.in_planes = self.dataset_train.in_planes   
         self.out_planes = self.dataset_train.out_planes
 
-        self.model = model.block(in_planes=self.in_planes, out_planes=self.out_planes).to(self.device)        
+        self.model = model.block(in_planes=self.in_planes, out_planes=self.out_planes)
 
     def optimize(self, epochs, lr=1e-4):
 
@@ -591,7 +581,7 @@ class deep_3d_inversor(object):
         # self.db = database.neural_db(label=self.out_name, lr=self.lr, root=root)
 
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.lr)
-        self.lossfn_L2 = nn.MSELoss().to(self.device)
+        self.lossfn_L2 = nn.MSELoss()
         
         self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer,
                                             step_size=30,
@@ -654,8 +644,6 @@ class deep_3d_inversor(object):
             current_lr = param_group['lr']
 
         for batch_idx, (data, target) in enumerate(t):
-
-            data, target = data.to(self.device), target.to(self.device)
             
             self.optimizer.zero_grad()
             output = self.model(data)
@@ -670,9 +658,7 @@ class deep_3d_inversor(object):
             loss_L2.backward()
             self.optimizer.step()
 
-            tmp = nvidia_smi.nvmlDeviceGetUtilizationRates(self.handle) 
-
-            t.set_postfix(loss=loss_L2_avg, lr=current_lr, gpu=tmp.gpu, mem=tmp.memory)
+            t.set_postfix(loss=loss_L2_avg, lr=current_lr)
 
     def test(self):
         self.model.eval()
@@ -687,11 +673,10 @@ class deep_3d_inversor(object):
         
         with torch.no_grad():
             for batch_idx, (data, target) in enumerate(t):
-                data, target = data.to(self.device), target.to(self.device)
             
                 output = self.model(data)
             
-            # sum up batch loss
+                # sum up batch loss
                 loss_L2 = self.lossfn_L2(output, target)
                                 
                 loss_L2_avg += (loss_L2.item() - loss_L2_avg) / n                
