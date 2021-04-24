@@ -217,7 +217,7 @@ class deep_3d_inversor(object):
 
         all_profiles = get_fov3()
 
-        padded_model = np.zeros(21, 64, 64, 30)
+        padded_model = np.zeros((21, 64, 64, 30), dtype=np.float64)
 
         padded_model[:, 0:50, 0:50, :] = all_profiles
 
