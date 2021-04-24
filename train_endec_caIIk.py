@@ -550,6 +550,30 @@ class dataset_spot(torch.utils.data.Dataset):
 
             self.model = np.vstack([self.temp, self.vlos, self.vturb])  #, self.pgas])
 
+            self.min_profile = np.min(self.profiles, axis=(1, 2, 3))
+
+            self.max_profile = np.max(self.profiles, axis=(1, 2, 3))
+
+            self.min_model = np.min(self.model, axis=(1, 2, 3))
+
+            self.max_model = np.max(self.model, axis=(1, 2, 3))
+
+            normalise_profile_params = np.zeros(30, 2)
+
+            normalise_model_params = np.zeros(450, 2)
+
+            normalise_profile_params[:, 0] = self.min_profile
+
+            normalise_profile_params[:, 1] = self.max_profile
+
+            normalise_model_params[:, 0] = self.min_model
+
+            normalise_model_paramsp[:, 1] = self.max_model
+
+            np.savetxt('normalise_profile_params.txt', normalise_profile_params)
+
+            np.savetxt('normalise_model_params.txt', normalise_model_params)
+
         else:
             profiles1, temp1, vlos1, vturb1, pgas1 = get_fov3()
 
@@ -580,13 +604,17 @@ class dataset_spot(torch.utils.data.Dataset):
 
             self.model = np.vstack([self.temp, self.vlos, self.vturb])  #  , self.pgas])
 
-        self.min_profile = np.min(self.profiles, axis=(1, 2, 3))
+            normalise_profile_params = np.loadtxt('normalise_profile_params.txt')
 
-        self.max_profile = np.max(self.profiles, axis=(1, 2, 3))
+            normalise_model_params = np.loadtxt('normalise_model_params.txt')
 
-        self.min_model = np.min(self.model, axis=(1, 2, 3))
+            self.min_profile = normalise_profile_params[:, 0]
 
-        self.max_model = np.max(self.model, axis=(1, 2, 3))
+            self.max_profile = normalise_profile_params[:, 1]
+
+            self.min_model = normalise_model_params[:, 0]
+
+            self.max_model - normalise_model_paramsp[:, 1]
 
         self.in_planes = 30
 
