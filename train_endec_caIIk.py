@@ -614,7 +614,7 @@ class dataset_spot(torch.utils.data.Dataset):
 
             self.min_model = normalise_model_params[:, 0]
 
-            self.max_model - normalise_model_params[:, 1]
+            self.max_model = normalise_model_params[:, 1]
 
         self.in_planes = 30
 
