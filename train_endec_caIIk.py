@@ -590,10 +590,6 @@ class dataset_spot(torch.utils.data.Dataset):
 
         target = self.model[:, index]
 
-        print(input.shape)
-
-        print(target.shape)
-
         return input.astype('float32'), target.astype('float32')
 
     def __len__(self):
