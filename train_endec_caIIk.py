@@ -580,15 +580,23 @@ class dataset_spot(torch.utils.data.Dataset):
 
             self.model = np.vstack([self.temp, self.vlos, self.vturb, self.pgas])
 
+        self.min_profile = np.min(self.profiles, axis=(1, 2, 3))
+
+        self.max_profile = np.max(self.profiles, axis=(1, 2, 3))
+
+        self.min_model = np.min(self.model, axis=(1, 2, 3))
+
+        self.max_model = np.max(self.model, axis=(1, 2, 3))
+
         self.in_planes = 30
 
         self.out_planes = 600
 
     def __getitem__(self, index):
 
-        input = self.profiles[:, index]
+        input = (self.profiles[:, index] - self.min_profile) / (self.max_profile - self.min_profile)
 
-        target = self.model[:, index]
+        target = (self.model[:, index] - self.min_model) / (self.max_model - self.min_model)
 
         return input.astype('float32'), target.astype('float32')
 
