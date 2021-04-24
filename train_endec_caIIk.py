@@ -682,11 +682,12 @@ class deep_3d_inversor(object):
             self.db = self.db.append(pd.DataFrame(data))
 
         self.db.to_hdf(
-            'label={}_lr={}_root={}.h5'.format(
+            'label_{}_lr_{}_root_{}.h5'.format(
                 self.out_name, 
                 self.lr, root
             ),
-            'data'
+            'data',
+            mode='w'
         )
         trainF.close()
 
