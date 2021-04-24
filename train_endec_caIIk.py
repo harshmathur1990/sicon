@@ -93,6 +93,8 @@ def get_fov1():
 
     all_vturb = fout['vturb'][()]
 
+    all_pgas = fout['pgas'][()]
+
     all_temp[a1, b1, c1] = fout_quiet['temp'][0, 0]
     all_temp[d1, e1, g1] = fout_reverse['temp'][0, 0]
     all_temp[h1, i1, j1] = fout_other['temp'][0, 0]
@@ -111,7 +113,13 @@ def get_fov1():
     all_vturb[k1, l1, m1] = fout_failed_falc['vturb'][0, 0]
     all_vturb[n1, o1, p1] = fout_failed_falc_2['vturb'][0, 0]
 
-    return finputprofiles['profiles'][:, :, :, ind, 0], all_temp, all_vlos, all_vturb
+    all_pgas[a1, b1, c1] = fout_quiet['pgas'][0, 0]
+    all_pgas[d1, e1, g1] = fout_reverse['pgas'][0, 0]
+    all_pgas[h1, i1, j1] = fout_other['pgas'][0, 0]
+    all_pgas[k1, l1, m1] = fout_failed_falc['pgas'][0, 0]
+    all_pgas[n1, o1, p1] = fout_failed_falc_2['pgas'][0, 0]
+
+    return finputprofiles['profiles'][:, :, :, ind, 0], all_temp, all_vlos, all_vturb, all_pgas
 
 
 def get_fov2():
@@ -269,6 +277,15 @@ def get_fov2():
         )
     )
 
+    all_pgas = np.zeros(
+        (
+            frames[1] - frames[0],
+            x[1] - x[0],
+            y[1] - y[0],
+            150
+        )
+    )
+
     all_temp[a1, b1, c1] = fout_atmos_quiet['temp'][0, 0]
     all_temp[a2, b2, c2] = fout_atmos_shock['temp'][0, 0]
     all_temp[a3, b3, c3] = fout_atmos_shock_78['temp'][0, 0]
@@ -290,7 +307,14 @@ def get_fov2():
     all_vturb[a5, b5, c5] = fout_atmos_retry['vturb'][0, 0]
     all_vturb[a6, b6, c6] = fout_atmos_other['vturb'][0, 0]
 
-    return all_profiles, all_temp, all_vlos, all_vturb
+    all_pgas[a1, b1, c1] = fout_atmos_quiet['pgas'][0, 0]
+    all_pgas[a2, b2, c2] = fout_atmos_shock['pgas'][0, 0]
+    all_pgas[a3, b3, c3] = fout_atmos_shock_78['pgas'][0, 0]
+    all_pgas[a4, b4, c4] = fout_atmos_reverse['pgas'][0, 0]
+    all_pgas[a5, b5, c5] = fout_atmos_retry['pgas'][0, 0]
+    all_pgas[a6, b6, c6] = fout_atmos_other['pgas'][0, 0]
+
+    return all_profiles, all_temp, all_vlos, all_vturb, all_pgas
 
 
 def get_fov3():
@@ -448,6 +472,15 @@ def get_fov3():
         )
     )
 
+    all_pgas = np.zeros(
+        (
+            frames[1] - frames[0],
+            x[1] - x[0],
+            y[1] - y[0],
+            150
+        )
+    )
+
     all_temp[a1, b1, c1] = fout_atmos_quiet['temp'][0, 0]
     all_temp[a2, b2, c2] = fout_atmos_shock['temp'][0, 0]
     all_temp[a3, b3, c3] = fout_atmos_shock_78['temp'][0, 0]
@@ -469,7 +502,14 @@ def get_fov3():
     all_vturb[a5, b5, c5] = fout_atmos_retry['vturb'][0, 0]
     all_vturb[a6, b6, c6] = fout_atmos_other['vturb'][0, 0]
 
-    return all_profiles, all_temp, all_vlos, all_vturb
+    all_pgas[a1, b1, c1] = fout_atmos_quiet['pgas'][0, 0]
+    all_pgas[a2, b2, c2] = fout_atmos_shock['pgas'][0, 0]
+    all_pgas[a3, b3, c3] = fout_atmos_shock_78['pgas'][0, 0]
+    all_pgas[a4, b4, c4] = fout_atmos_reverse['pgas'][0, 0]
+    all_pgas[a5, b5, c5] = fout_atmos_retry['pgas'][0, 0]
+    all_pgas[a6, b6, c6] = fout_atmos_other['pgas'][0, 0]
+
+    return all_profiles, all_temp, all_vlos, all_vturb, all_pgas
 
 
 class dataset_spot(torch.utils.data.Dataset):
@@ -479,56 +519,66 @@ class dataset_spot(torch.utils.data.Dataset):
         noise_scale = 1e-3
 
         if mode == 'train':
-            profiles1, temp1, vlos1, vturb1 = get_fov1()
+            profiles1, temp1, vlos1, vturb1, pgas1 = get_fov1()
 
-            profiles2, temp2, vlos2, vturb2 = get_fov2()
+            profiles2, temp2, vlos2, vturb2, pgas2 = get_fov2()
 
             self.profiles = np.transpose(
                 np.vstack([profiles1, profiles2]),
                 axes=(3, 0, 1, 2)
-            )
+            )[:, :, 9:41, 9:41]
 
             self.temp = np.transpose(
                 np.vstack([temp1, temp2]),
                 axes=(3, 0, 1, 2)
-            )
+            )[:, :, 9:41, 9:41]
 
             self.vlos = np.transpose(
                 np.vstack([vlos1, vlos2]),
                 axes=(3, 0, 1, 2)
-            )
+            )[:, :, 9:41, 9:41]
 
             self.vturb = np.transpose(
                 np.vstack([vturb1, vturb2]),
                 axes=(3, 0, 1, 2)
-            )
+            )[:, :, 9:41, 9:41]
 
-            self.model = np.vstack([self.temp, self.vlos, self.vturb])
+            self.pgas = np.transpose(
+                np.vstack([pgas1, pgas2]),
+                axes=(3, 0, 1, 2)
+            )[:, :, 9:41, 9:41]
+
+            self.model = np.vstack([self.temp, self.vlos, self.vturb, self.pgas])
 
         else:
-            profiles1, temp1, vlos1, vturb1 = get_fov3()
+            profiles1, temp1, vlos1, vturb1, pgas1 = get_fov3()
 
             self.profiles = np.transpose(
                 profiles1,
                 axes=(3, 0, 1, 2)
-            )
+            )[:, :, 9:41, 9:41]
 
             self.temp = np.transpose(
                temp1,
                 axes=(3, 0, 1, 2)
-            )
+            )[:, :, 9:41, 9:41]
 
             self.vlos = np.transpose(
                 vlos1,
                 axes=(3, 0, 1, 2)
-            )
+            )[:, :, 9:41, 9:41]
 
             self.vturb = np.transpose(
                 vturb1,
                 axes=(3, 0, 1, 2)
-            )
+            )[:, :, 9:41, 9:41]
 
-            self.model = np.vstack([self.temp, self.vlos, self.vturb])
+            self.pgas = np.transpose(
+                pgas1,
+                axes=(3, 0, 1, 2)
+            )[:, :, 9:41, 9:41]
+
+            self.model = np.vstack([self.temp, self.vlos, self.vturb, self.pgas])
 
         self.in_planes = 30
 
@@ -540,10 +590,15 @@ class dataset_spot(torch.utils.data.Dataset):
 
         target = self.model[:, index]
 
+        print(input.shape)
+
+        print(target.shape)
+
         return input.astype('float32'), target.astype('float32')
 
     def __len__(self):
         return self.profiles.shape[1]
+
 
 def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
     torch.save(state, filename)
