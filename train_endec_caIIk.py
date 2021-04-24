@@ -582,7 +582,7 @@ class dataset_spot(torch.utils.data.Dataset):
 
         self.in_planes = 30
 
-        self.out_planes = 450
+        self.out_planes = 600
 
     def __getitem__(self, index):
 
