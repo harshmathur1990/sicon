@@ -111,7 +111,7 @@ def get_fov1():
     all_vturb[k1, l1, m1] = fout_failed_falc['vturb'][0, 0]
     all_vturb[n1, o1, p1] = fout_failed_falc_2['vturb'][0, 0]
 
-    return finputprofiles['profiles'][:, :, :, ind[wave_indices_list[0]], 0], all_temp, all_vlos, all_vturb
+    return finputprofiles['profiles'][:, :, :, ind, 0], all_temp, all_vlos, all_vturb
 
 
 def get_fov2():
