@@ -242,6 +242,8 @@ class deep_3d_inversor(object):
 
             output = np.transpose(output, axes=(0, 2, 3, 1))
 
+            output = output[:, 0:50, 0:50, :]
+
             temp = output[:, :, :, 0:150]
 
             vlos = output[:, :, :, 150:300]
