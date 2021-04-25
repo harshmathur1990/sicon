@@ -13,6 +13,9 @@ import model_encdec as model
 from pathlib import Path
 
 
+indices = np.array([50, 82, 106, 116, 124, 131, 140, 148])
+
+
 ltau = np.array(
     [
         -8.       , -7.78133  , -7.77448  , -7.76712  , -7.76004  ,
@@ -217,11 +220,11 @@ class deep_3d_inversor(object):
 
         all_profiles = get_fov3()
 
-        padded_model = np.zeros((21, 64, 64, 30), dtype=np.float64)
+        padded_profiles = np.zeros((21, 64, 64, 30), dtype=np.float64)
 
-        padded_model[:, 0:50, 0:50, :] = all_profiles
+        padded_profiles[:, 0:50, 0:50, :] = all_profiles
 
-        self.stokes = np.transpose(padded_model, axes=(0, 3, 1, 2))
+        self.stokes = np.transpose(padded_profiles, axes=(0, 3, 1, 2))
 
         self.stokes = (self.stokes - self.min_profile[np.newaxis, :, np.newaxis, np.newaxis]) / (self.max_profile[np.newaxis, :, np.newaxis, np.newaxis] - self.min_profile[np.newaxis, :, np.newaxis, np.newaxis])
 
@@ -244,19 +247,19 @@ class deep_3d_inversor(object):
 
             output = output[:, 0:50, 0:50, :]
 
-            temp = output[:, :, :, 0:150]
+            temp = output[:, :, :, 0:8]
 
-            vlos = output[:, :, :, 150:300]
+            vlos = output[:, :, :, 8:16]
 
-            vturb = output[:, :, :, 300:450]
+            vturb = output[:, :, :, 16:24]
 
-            m = sp.model(nx=temp.shape[2], ny=temp.shape[1], nt=temp.shape[0], ndep=150)
+            m = sp.model(nx=temp.shape[2], ny=temp.shape[1], nt=temp.shape[0], ndep=8)
 
-            m.ltau[:, :, :] = ltau
+            m.ltau[:, :, :] = ltau[indices]
 
             m.temp = temp
 
-            m.pgas[:, :, :] = pgas
+            m.pgas[:, :, :] = pgas[indices]
 
             m.vlos = vlos
 
@@ -268,5 +271,5 @@ if __name__ == '__main__':
     os.chdir('/home/harsh/CourseworkRepo/stic/example')
     from prepare_data import *
     os.chdir('/home/harsh/CourseworkRepo/sicon')
-    deep_network = deep_3d_inversor(checkpoint='weights_encdec/2021-04-24-20:53_-lr_0.0003.pth.best')
+    deep_network = deep_3d_inversor(checkpoint='weights_encdec/2021-04-25-10:50_-lr_0.0003.pth.best')
     deep_network.evaluate()
