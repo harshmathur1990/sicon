@@ -13,7 +13,7 @@ import model_encdec as model
 from pathlib import Path
 
 
-indices = np.array([50, 82, 106, 116, 124, 131, 140, 148])
+indices = np.array([82, 106, 116, 124, 131])
 
 
 ltau = np.array(
@@ -200,7 +200,7 @@ class deep_3d_inversor(object):
     def __init__(self, checkpoint=None):
 
         # Instantiate the model
-        self.model = model.block(in_planes=30, out_planes=24)
+        self.model = model.block(in_planes=30, out_planes=15)
         self.checkpoint = torch.load(checkpoint, map_location=lambda storage, loc: storage)
         self.model.load_state_dict(self.checkpoint['state_dict'])    
 
@@ -222,7 +222,7 @@ class deep_3d_inversor(object):
 
         padded_profiles = np.zeros((21, 64, 64, 30), dtype=np.float64)
 
-        padded_profiles[:, 0:50, 0:50, :] = all_profiles
+        padded_profiles[:, 7:57, 7:57, :] = all_profiles
 
         self.stokes = np.transpose(padded_profiles, axes=(0, 3, 1, 2))
 
@@ -245,15 +245,15 @@ class deep_3d_inversor(object):
 
             output = np.transpose(output, axes=(0, 2, 3, 1))
 
-            output = output[:, 0:50, 0:50, :]
+            output = output[:, 7:57, 7:57, :]
 
-            temp = output[:, :, :, 0:8]
+            temp = output[:, :, :, 0:5]
 
-            vlos = output[:, :, :, 8:16]
+            vlos = output[:, :, :, 5:10]
 
-            vturb = output[:, :, :, 16:24]
+            vturb = output[:, :, :, 10:15]
 
-            m = sp.model(nx=temp.shape[2], ny=temp.shape[1], nt=temp.shape[0], ndep=8)
+            m = sp.model(nx=temp.shape[2], ny=temp.shape[1], nt=temp.shape[0], ndep=5)
 
             m.ltau[:, :, :] = ltau[indices]
 
