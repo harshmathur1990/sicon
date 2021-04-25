@@ -17,7 +17,7 @@ import os
 from pathlib import Path
 
 
-indices = np.array([50, 82, 106, 116, 124, 131, 140, 148])
+indices = np.array([82, 106, 116, 124, 131])
 
 def get_fov1():
 
@@ -618,9 +618,9 @@ class dataset_spot(torch.utils.data.Dataset):
 
             self.max_model = normalise_model_params[:, 1]
 
-        self.in_planes = 30
+        self.in_planes = self.profiles.shape[0]
 
-        self.out_planes = 24
+        self.out_planes = self.model.shape[0]
 
     def __getitem__(self, index):
 
