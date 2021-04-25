@@ -17,6 +17,8 @@ import os
 from pathlib import Path
 
 
+indices = np.array([50, 82, 106, 116, 124, 131, 140, 148])
+
 def get_fov1():
 
     input_profile_path = Path(
@@ -531,22 +533,22 @@ class dataset_spot(torch.utils.data.Dataset):
             self.temp = np.transpose(
                 np.vstack([temp1, temp2]),
                 axes=(3, 0, 1, 2)
-            )[:, :, 9:41, 9:41]
+            )[indices, :, 9:41, 9:41]
 
             self.vlos = np.transpose(
                 np.vstack([vlos1, vlos2]),
                 axes=(3, 0, 1, 2)
-            )[:, :, 9:41, 9:41]
+            )[indices, :, 9:41, 9:41]
 
             self.vturb = np.transpose(
                 np.vstack([vturb1, vturb2]),
                 axes=(3, 0, 1, 2)
-            )[:, :, 9:41, 9:41]
+            )[indices, :, 9:41, 9:41]
 
             self.pgas = np.transpose(
                 np.vstack([pgas1, pgas2]),
                 axes=(3, 0, 1, 2)
-            )[:, :, 9:41, 9:41]
+            )[indices, :, 9:41, 9:41]
 
             self.model = np.vstack([self.temp, self.vlos, self.vturb])  #, self.pgas])
 
@@ -585,22 +587,22 @@ class dataset_spot(torch.utils.data.Dataset):
             self.temp = np.transpose(
                temp1,
                 axes=(3, 0, 1, 2)
-            )[:, :, 9:41, 9:41]
+            )[indices, :, 9:41, 9:41]
 
             self.vlos = np.transpose(
                 vlos1,
                 axes=(3, 0, 1, 2)
-            )[:, :, 9:41, 9:41]
+            )[indices, :, 9:41, 9:41]
 
             self.vturb = np.transpose(
                 vturb1,
                 axes=(3, 0, 1, 2)
-            )[:, :, 9:41, 9:41]
+            )[indices, :, 9:41, 9:41]
 
             self.pgas = np.transpose(
                 pgas1,
                 axes=(3, 0, 1, 2)
-            )[:, :, 9:41, 9:41]
+            )[indices, :, 9:41, 9:41]
 
             self.model = np.vstack([self.temp, self.vlos, self.vturb])  #  , self.pgas])
 
@@ -618,7 +620,7 @@ class dataset_spot(torch.utils.data.Dataset):
 
         self.in_planes = 30
 
-        self.out_planes = 450
+        self.out_planes = 24
 
     def __getitem__(self, index):
 
