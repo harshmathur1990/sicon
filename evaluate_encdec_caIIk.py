@@ -200,7 +200,7 @@ class deep_3d_inversor(object):
     def __init__(self, checkpoint=None):
 
         # Instantiate the model
-        self.model = model.block(in_planes=30, out_planes=450)
+        self.model = model.block(in_planes=30, out_planes=24)
         self.checkpoint = torch.load(checkpoint, map_location=lambda storage, loc: storage)
         self.model.load_state_dict(self.checkpoint['state_dict'])    
 
