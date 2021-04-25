@@ -562,7 +562,7 @@ class dataset_spot(torch.utils.data.Dataset):
 
             normalise_profile_params = np.zeros((self.profiles.shape[0], 2), dtype=np.float64)
 
-            normalise_model_params = np.zeros((self.temp.shape[0], 2), dtype=np.float64)
+            normalise_model_params = np.zeros((self.model.shape[0], 2), dtype=np.float64)
 
             normalise_profile_params[:, 0] = self.min_profile
 
