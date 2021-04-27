@@ -1,7 +1,7 @@
+import sys
 import os
-os.chdir('/home/harsh/CourseworkRepo/stic/example')
+sys.path.insert(1, '/home/harsh/CourseworkRepo/stic/example')
 from prepare_data import *
-os.chdir('/home/harsh/CourseworkRepo/sicon')
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
