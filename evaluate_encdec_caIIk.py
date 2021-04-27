@@ -267,5 +267,5 @@ if __name__ == '__main__':
     os.chdir('/home/harsh/CourseworkRepo/sicon')
     activation_nodes = sys.argv[1]
     nodes = get_nodes(activation_nodes)
-    deep_network = deep_3d_inversor(checkpoint='weights_encdec/2021-04-25-11:15_-lr_0.0003.pth.best')
+    deep_network = deep_3d_inversor(checkpoint=sys.argv[2])
     deep_network.evaluate()
