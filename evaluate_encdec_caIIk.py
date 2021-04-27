@@ -200,15 +200,14 @@ class deep_3d_inversor(object):
     
     def evaluate(self, save_output=False):
 
-        all_profiles = get_fov3()
+        # shape = time, wavelength, x, y
+        all_profiles = np.transpose(get_fov3(), axes=(0, 3, 1, 2))
 
-        padded_profiles = np.zeros((21, 64, 64, 30), dtype=np.float64)
+        all_profiles = (all_profiles - self.min_profile[np.newaxis, :, np.newaxis, np.newaxis]) / (self.max_profile[np.newaxis, :, np.newaxis, np.newaxis] - self.min_profile[np.newaxis, :, np.newaxis, np.newaxis])
 
-        padded_profiles[:, 7:57, 7:57, :] = all_profiles
+        all_profiles = torch.from_numpy(all_profiles.astype('float32'))
 
-        self.stokes = np.transpose(padded_profiles, axes=(0, 3, 1, 2))
-
-        self.stokes = (self.stokes - self.min_profile[np.newaxis, :, np.newaxis, np.newaxis]) / (self.max_profile[np.newaxis, :, np.newaxis, np.newaxis] - self.min_profile[np.newaxis, :, np.newaxis, np.newaxis])
+        input = nn.functional.pad(all_profiles, (7, 7, 7, 7), mode='reflect')
 
         # Put the model in evaulation mode                                                       
         self.model.eval()
@@ -217,7 +216,6 @@ class deep_3d_inversor(object):
         with torch.no_grad():
             
             # Input tensor
-            input = torch.from_numpy(self.stokes.astype('float32'))
             
             # Evluate the model and rescale the output
             start = time.time()
@@ -225,6 +223,7 @@ class deep_3d_inversor(object):
             output = (output * (self.max_model[np.newaxis, :, np.newaxis, np.newaxis] - self.min_model[np.newaxis, :, np.newaxis, np.newaxis]) ) + self.min_model[np.newaxis, :, np.newaxis, np.newaxis]
             print('Elapsed time : {0} s'.format(time.time()-start))
 
+            # shape = time, x, y, logtau
             output = np.transpose(output, axes=(0, 2, 3, 1))
 
             output = output[:, 7:57, 7:57, :]
@@ -247,7 +246,7 @@ class deep_3d_inversor(object):
             all_vlos = vec_evaluate_vlos(vlos)
             all_vturb = vec_evaluate_vturb(vturb)
 
-            m = sp.model(nx=temp.shape[2], ny=temp.shape[1], nt=temp.shape[0], ndep=150)
+            m = sp.model(nx=all_temp.shape[2], ny=all_temp.shape[1], nt=all_temp.shape[0], ndep=150)
 
             m.ltau[:, :, :] = ltau[indices]
 
