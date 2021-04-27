@@ -17,7 +17,18 @@ import os
 from pathlib import Path
 
 
-indices = np.array([82, 106, 116, 124, 131])
+quiet_nodes = [
+    np.array([65, 95, 112, 119, 127, 140]),
+    np.array([140]),
+    np.array([68, 97, 112, 128])
+]
+
+emission_nodes = [
+    np.array([95, 112, 119, 127, 140]),
+    np.array([50, 95, 112, 127, 140]),
+    np.array([68, 97, 112, 128])
+]
+
 
 def get_fov1():
 
@@ -528,27 +539,27 @@ class dataset_spot(torch.utils.data.Dataset):
             self.profiles = np.transpose(
                 np.vstack([profiles1, profiles2]),
                 axes=(3, 0, 1, 2)
-            )[:, :, 9:41, 9:41]
+            )
 
             self.temp = np.transpose(
                 np.vstack([temp1, temp2]),
                 axes=(3, 0, 1, 2)
-            )[indices, :, 9:41, 9:41]
+            )[emission_nodes[0]]
 
             self.vlos = np.transpose(
                 np.vstack([vlos1, vlos2]),
                 axes=(3, 0, 1, 2)
-            )[indices, :, 9:41, 9:41]
+            )[emission_nodes[1]]
 
             self.vturb = np.transpose(
                 np.vstack([vturb1, vturb2]),
                 axes=(3, 0, 1, 2)
-            )[indices, :, 9:41, 9:41]
+            )[emission_nodes[2]]
 
             self.pgas = np.transpose(
                 np.vstack([pgas1, pgas2]),
                 axes=(3, 0, 1, 2)
-            )[indices, :, 9:41, 9:41]
+            )
 
             self.model = np.vstack([self.temp, self.vlos, self.vturb])  #, self.pgas])
 
@@ -572,9 +583,9 @@ class dataset_spot(torch.utils.data.Dataset):
 
             normalise_model_params[:, 1] = self.max_model
 
-            np.savetxt('normalise_profile_params.txt', normalise_profile_params)
+            np.savetxt('normalise_profile_params_emission.txt', normalise_profile_params)
 
-            np.savetxt('normalise_model_params.txt', normalise_model_params)
+            np.savetxt('normalise_model_params_emission.txt', normalise_model_params)
 
         else:
             profiles1, temp1, vlos1, vturb1, pgas1 = get_fov3()
@@ -582,33 +593,33 @@ class dataset_spot(torch.utils.data.Dataset):
             self.profiles = np.transpose(
                 profiles1,
                 axes=(3, 0, 1, 2)
-            )[:, :, 9:41, 9:41]
+            )
 
             self.temp = np.transpose(
                temp1,
                 axes=(3, 0, 1, 2)
-            )[indices, :, 9:41, 9:41]
+            )[emission_nodes[0]]
 
             self.vlos = np.transpose(
                 vlos1,
                 axes=(3, 0, 1, 2)
-            )[indices, :, 9:41, 9:41]
+            )[emission_nodes[1]]
 
             self.vturb = np.transpose(
                 vturb1,
                 axes=(3, 0, 1, 2)
-            )[indices, :, 9:41, 9:41]
+            )[emission_nodes[2]]
 
             self.pgas = np.transpose(
                 pgas1,
                 axes=(3, 0, 1, 2)
-            )[indices, :, 9:41, 9:41]
+            )
 
             self.model = np.vstack([self.temp, self.vlos, self.vturb])  #  , self.pgas])
 
-            normalise_profile_params = np.loadtxt('normalise_profile_params.txt')
+            normalise_profile_params = np.loadtxt('normalise_profile_params_emission.txt')
 
-            normalise_model_params = np.loadtxt('normalise_model_params.txt')
+            normalise_model_params = np.loadtxt('normalise_model_params_emission.txt')
 
             self.min_profile = normalise_profile_params[:, 0]
 
@@ -627,6 +638,10 @@ class dataset_spot(torch.utils.data.Dataset):
         input = (self.profiles[:, index] - self.min_profile[:, np.newaxis, np.newaxis]) / (self.max_profile[:, np.newaxis, np.newaxis] - self.min_profile[:, np.newaxis, np.newaxis])
 
         target = (self.model[:, index] - self.min_model[:, np.newaxis, np.newaxis]) / (self.max_model[:, np.newaxis, np.newaxis] - self.min_model[:, np.newaxis, np.newaxis])
+
+        input = nn.functional.pad(input, (7, 7, 7, 7), mode='reflect')
+
+        target = nn.functional.pad(target, (7, 7, 7, 7), mode='reflect')
 
         return input.astype('float32'), target.astype('float32')
 

@@ -11,9 +11,7 @@ import sys
 import os
 import model_encdec as model
 from pathlib import Path
-
-
-indices = np.array([82, 106, 116, 124, 131])
+from cubic_bezier import prepare_evaluate_bezier
 
 
 ltau = np.array(
@@ -51,48 +49,17 @@ ltau = np.array(
     ]
 )
 
-pgas = np.array(
-    [
-        1.92480162e-01, 2.10335478e-01, 2.11099088e-01, 2.11936578e-01,
-        2.12759241e-01, 2.13655323e-01, 2.14651138e-01, 2.15732709e-01,
-        2.16910645e-01, 2.18287319e-01, 2.19797805e-01, 2.21369892e-01,
-        2.22221285e-01, 2.23084763e-01, 2.23957345e-01, 2.24854335e-01,
-        2.25815415e-01, 2.26856306e-01, 2.28054076e-01, 2.29489878e-01,
-        2.31181175e-01, 2.33230412e-01, 2.35753953e-01, 2.38895416e-01,
-        2.42812648e-01, 2.47627556e-01, 2.53370225e-01, 2.60512590e-01,
-        2.70063460e-01, 2.83080816e-01, 3.00793827e-01, 3.24782073e-01,
-        3.57132912e-01, 4.00601238e-01, 4.56965476e-01, 5.29293299e-01,
-        6.24008834e-01, 7.49855459e-01, 9.16294158e-01, 1.13508153e+00,
-        1.42164230e+00, 1.79735219e+00, 2.28865838e+00, 2.92158079e+00,
-        3.71474624e+00, 4.67952347e+00, 5.81029558e+00, 7.12056494e+00,
-        8.65885639e+00, 1.04314861e+01, 1.24189425e+01, 1.46121168e+01,
-        1.69987698e+01, 1.90496445e+01, 2.08928623e+01, 2.28027058e+01,
-        2.47815571e+01, 2.68437004e+01, 2.89950733e+01, 3.12255573e+01,
-        3.35608482e+01, 3.60105362e+01, 3.85653992e+01, 4.12354431e+01,
-        4.40376701e+01, 4.69793587e+01, 5.00764923e+01, 5.33600731e+01,
-        5.68586159e+01, 6.05851173e+01, 6.45416412e+01, 6.87255859e+01,
-        7.31585388e+01, 7.78767090e+01, 8.29482269e+01, 8.84405975e+01,
-        9.44148178e+01, 1.00943398e+02, 1.08040993e+02, 1.15709175e+02,
-        1.24027237e+02, 1.33072845e+02, 1.42778915e+02, 1.53122635e+02,
-        1.64239197e+02, 1.76195251e+02, 1.89045700e+02, 2.02897873e+02,
-        2.17846008e+02, 2.34042114e+02, 2.51210236e+02, 2.69186646e+02,
-        2.88341248e+02, 3.09395111e+02, 3.31706787e+02, 3.54934540e+02,
-        3.79624237e+02, 4.06384979e+02, 4.35409149e+02, 4.67003418e+02,
-        5.02125732e+02, 5.41979980e+02, 5.87387085e+02, 6.39156738e+02,
-        6.98575623e+02, 7.68398621e+02, 8.51376160e+02, 9.49656250e+02,
-        1.06806201e+03, 1.21330579e+03, 1.39257166e+03, 1.61584387e+03,
-        1.89664856e+03, 2.25192163e+03, 2.69018799e+03, 3.20748486e+03,
-        3.81380298e+03, 4.52528320e+03, 5.36149463e+03, 6.34581787e+03,
-        7.50641797e+03, 8.87612695e+03, 1.04934688e+04, 1.24038418e+04,
-        1.46598135e+04, 1.73236582e+04, 2.04680117e+04, 2.41766445e+04,
-        2.85175430e+04, 3.35073477e+04, 3.90268633e+04, 4.48068984e+04,
-        5.07996992e+04, 5.70373594e+04, 6.35809258e+04, 7.05180547e+04,
-        7.79622109e+04, 8.61010938e+04, 9.53656875e+04, 1.06372070e+05,
-        1.19236258e+05, 1.33759531e+05, 1.49984500e+05, 1.68110281e+05,
-        1.88273656e+05, 2.10752016e+05, 2.35874125e+05, 2.63987969e+05,
-        2.95532281e+05, 3.30931750e+05
-    ]
-)
+quiet_nodes = [
+    np.array([65, 95, 112, 119, 127, 140]),
+    np.array([140]),
+    np.array([68, 97, 112, 128])
+]
+
+emission_nodes = [
+    np.array([95, 112, 119, 127, 140]),
+    np.array([50, 95, 112, 127, 140]),
+    np.array([68, 97, 112, 128])
+]
 
 
 def get_fov3():
@@ -204,9 +171,9 @@ class deep_3d_inversor(object):
         self.checkpoint = torch.load(checkpoint, map_location=lambda storage, loc: storage)
         self.model.load_state_dict(self.checkpoint['state_dict'])    
 
-        normalise_profile_params = np.loadtxt('normalise_profile_params.txt')
+        normalise_profile_params = np.loadtxt('normalise_profile_params_shock.txt')
 
-        normalise_model_params = np.loadtxt('normalise_model_params.txt')
+        normalise_model_params = np.loadtxt('normalise_model_params_shock.txt')
 
         self.min_profile = normalise_profile_params[:, 0]
 
@@ -251,9 +218,21 @@ class deep_3d_inversor(object):
 
             vlos = output[:, :, :, 5:10]
 
-            vturb = output[:, :, :, 10:15]
+            vturb = output[:, :, :, 10:14]
 
-            m = sp.model(nx=temp.shape[2], ny=temp.shape[1], nt=temp.shape[0], ndep=5)
+            interp_temp = prepare_evaluate_bezier(ltau[emission_nodes[0]], ltau)
+            interp_vlos = prepare_evaluate_bezier(ltau[emission_nodes[1]], ltau)
+            interp_vturb = prepare_evaluate_bezier(ltau[emission_nodes[2]], ltau)
+
+            vec_evaluate_temp = np.vectorize(interp_temp, signature='(m)->(n)')
+            vec_evaluate_vlos = np.vectorize(interp_vlos, signature='(m)->(n)')
+            vec_evaluate_vturb = np.vectorize(interp_vturb, signature='(m)->(n)')
+
+            all_temp = vec_evaluate_temp(temp)
+            all_vlos = vec_evaluate_vlos(vlos)
+            all_vturb = vec_evaluate_vturb(vturb)
+
+            m = sp.model(nx=temp.shape[2], ny=temp.shape[1], nt=temp.shape[0], ndep=150)
 
             m.ltau[:, :, :] = ltau[indices]
 
@@ -265,11 +244,11 @@ class deep_3d_inversor(object):
 
             m.vturb = vturb
 
-            m.write('output_fov_3_neural_net.nc')
+            m.write('output_fov_emission_neural_net.nc')
 
 if __name__ == '__main__':
     os.chdir('/home/harsh/CourseworkRepo/stic/example')
     from prepare_data import *
     os.chdir('/home/harsh/CourseworkRepo/sicon')
-    deep_network = deep_3d_inversor(checkpoint='weights_encdec/2021-04-25-10:50_-lr_0.0003.pth.best')
+    deep_network = deep_3d_inversor(checkpoint='weights_encdec/2021-04-25-11:15_-lr_0.0003.pth.best')
     deep_network.evaluate()
