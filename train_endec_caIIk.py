@@ -629,6 +629,14 @@ class dataset_spot(torch.utils.data.Dataset):
 
             self.max_model = normalise_model_params[:, 1]
 
+        self.profiles = torch.from_numpy(self.profiles.astype('float32'))
+
+        self.model = torch.from_numpy(self.model.astype('float32'))
+
+        self.profiles = nn.functional.pad(self.profiles, (7, 7, 7, 7), mode='reflect')
+
+        self.model = nn.functional.pad(self.model, (7, 7, 7, 7), mode='reflect')
+
         self.in_planes = self.profiles.shape[0]
 
         self.out_planes = self.model.shape[0]
@@ -638,14 +646,6 @@ class dataset_spot(torch.utils.data.Dataset):
         input = (self.profiles[:, index] - self.min_profile[:, np.newaxis, np.newaxis]) / (self.max_profile[:, np.newaxis, np.newaxis] - self.min_profile[:, np.newaxis, np.newaxis])
 
         target = (self.model[:, index] - self.min_model[:, np.newaxis, np.newaxis]) / (self.max_model[:, np.newaxis, np.newaxis] - self.min_model[:, np.newaxis, np.newaxis])
-
-        input = torch.from_numpy(input.astype('float32'))
-
-        target = torch.from_numpy(target.astype('float32'))
-        
-        input = nn.functional.pad(input, (7, 7, 7, 7), mode='reflect')
-
-        target = nn.functional.pad(target, (7, 7, 7, 7), mode='reflect')
 
         return input, target
 
