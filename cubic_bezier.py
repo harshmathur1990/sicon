@@ -44,9 +44,9 @@ def get_bezier_cubic(points):
 # evalute each cubic curve on the range [0, 1] sliced in n points
 def prepare_evaluate_bezier(node_position, log_tau):
     def evaluate_bezier(nodes):
-        curves = get_bezier_cubic(nodes)
 
         if node_position.size >=3:
+            curves = get_bezier_cubic(nodes)
             model_values = list()
             new_node_position = [np.NINF] + list(node_position) + [np.Inf]
             i = 0
