@@ -259,7 +259,7 @@ class deep_3d_inversor(object):
 
             m.vturb = vturb
 
-            m.write('output_fov_emission_neural_net.nc')
+            m.write('output_fov_3_{}_neural_net.nc'.format(activation_nodes))
 
 if __name__ == '__main__':
     os.chdir('/home/harsh/CourseworkRepo/stic/example')
