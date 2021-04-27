@@ -629,6 +629,10 @@ class dataset_spot(torch.utils.data.Dataset):
 
             self.max_model = normalise_model_params[:, 1]
 
+        self.profiles = (self.profiles - self.min_profile[:, np.newaxis, np.newaxis, np.newaxis]) / (self.max_profile[:, np.newaxis, np.newaxis, np.newaxis] - self.min_profile[:, np.newaxis, np.newaxis, np.newaxis])
+
+        self.model = (self.model - self.min_model[:, np.newaxis, np.newaxis, np.newaxis]) / (self.max_model[:, np.newaxis, np.newaxis, np.newaxis] - self.min_model[:, np.newaxis, np.newaxis, np.newaxis])
+
         self.profiles = torch.from_numpy(self.profiles.astype('float32'))
 
         self.model = torch.from_numpy(self.model.astype('float32'))
@@ -643,11 +647,7 @@ class dataset_spot(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
 
-        input = (self.profiles[:, index] - self.min_profile[:, np.newaxis, np.newaxis]) / (self.max_profile[:, np.newaxis, np.newaxis] - self.min_profile[:, np.newaxis, np.newaxis])
-
-        target = (self.model[:, index] - self.min_model[:, np.newaxis, np.newaxis]) / (self.max_model[:, np.newaxis, np.newaxis] - self.min_model[:, np.newaxis, np.newaxis])
-
-        return input, target
+        return self.profiles[:, index], self.model[:, index]
 
     def __len__(self):
         return self.profiles.shape[1]
