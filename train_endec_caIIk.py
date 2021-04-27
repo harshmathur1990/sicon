@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 import torch
 import torch.nn as nn
@@ -29,6 +30,11 @@ emission_nodes = [
     np.array([68, 97, 112, 128])
 ]
 
+def get_nodes(nodename='emission'):
+    if nodename == 'emission':
+        return emission_nodes
+    else:
+        return quiet_nodes
 
 def get_fov1():
 
@@ -527,6 +533,7 @@ def get_fov3():
 
 class dataset_spot(torch.utils.data.Dataset):
     def __init__(self, mode='train'):
+        global nodes, activation_nodes
         super(dataset_spot, self).__init__()
 
         noise_scale = 1e-3
@@ -544,17 +551,17 @@ class dataset_spot(torch.utils.data.Dataset):
             self.temp = np.transpose(
                 np.vstack([temp1, temp2]),
                 axes=(3, 0, 1, 2)
-            )[emission_nodes[0]]
+            )[nodes[0]]
 
             self.vlos = np.transpose(
                 np.vstack([vlos1, vlos2]),
                 axes=(3, 0, 1, 2)
-            )[emission_nodes[1]]
+            )[nodes[1]]
 
             self.vturb = np.transpose(
                 np.vstack([vturb1, vturb2]),
                 axes=(3, 0, 1, 2)
-            )[emission_nodes[2]]
+            )[nodes[2]]
 
             self.pgas = np.transpose(
                 np.vstack([pgas1, pgas2]),
@@ -583,9 +590,19 @@ class dataset_spot(torch.utils.data.Dataset):
 
             normalise_model_params[:, 1] = self.max_model
 
-            np.savetxt('normalise_profile_params_emission.txt', normalise_profile_params)
+            np.savetxt(
+                'weights_encdec/normalise_profile_params_{}.txt'.format(
+                    activation_nodes
+                ),
+                normalise_profile_params
+            )
 
-            np.savetxt('normalise_model_params_emission.txt', normalise_model_params)
+            np.savetxt(
+                'weights_encdec/normalise_model_params_{}.txt'.format(
+                    activation_nodes
+                ),
+                normalise_model_params
+            )
 
         else:
             profiles1, temp1, vlos1, vturb1, pgas1 = get_fov3()
@@ -598,17 +615,17 @@ class dataset_spot(torch.utils.data.Dataset):
             self.temp = np.transpose(
                temp1,
                 axes=(3, 0, 1, 2)
-            )[emission_nodes[0]]
+            )[nodes[0]]
 
             self.vlos = np.transpose(
                 vlos1,
                 axes=(3, 0, 1, 2)
-            )[emission_nodes[1]]
+            )[nodes[1]]
 
             self.vturb = np.transpose(
                 vturb1,
                 axes=(3, 0, 1, 2)
-            )[emission_nodes[2]]
+            )[nodes[2]]
 
             self.pgas = np.transpose(
                 pgas1,
@@ -617,9 +634,17 @@ class dataset_spot(torch.utils.data.Dataset):
 
             self.model = np.vstack([self.temp, self.vlos, self.vturb])  #  , self.pgas])
 
-            normalise_profile_params = np.loadtxt('normalise_profile_params_emission.txt')
+            normalise_profile_params = np.loadtxt(
+                'weights_encdec/normalise_profile_params_{}.txt'.format(
+                    activation_nodes
+                )
+            )
 
-            normalise_model_params = np.loadtxt('normalise_model_params_emission.txt')
+            normalise_model_params = np.loadtxt(
+                'weights_encdec/normalise_model_params_{}.txt'.format(
+                    activation_nodes
+                )
+            )
 
             self.min_profile = normalise_profile_params[:, 0]
 
@@ -802,6 +827,8 @@ class deep_3d_inversor(object):
         
                 t.set_postfix(loss=loss_L2_avg, lr=current_lr)
             
-
-deep_inversor = deep_3d_inversor()
-deep_inversor.optimize(50, lr=3e-4)
+if __name__ == '__main__':
+    activation_nodes = sys.argv[1]
+    nodes = get_nodes(activation_nodes)
+    deep_inversor = deep_3d_inversor()
+    deep_inversor.optimize(50, lr=3e-4)

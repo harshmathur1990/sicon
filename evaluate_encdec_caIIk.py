@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
@@ -61,6 +62,11 @@ emission_nodes = [
     np.array([68, 97, 112, 128])
 ]
 
+def get_nodes(nodename='emission'):
+    if nodename == 'emission':
+        return emission_nodes
+    else:
+        return quiet_nodes
 
 def get_fov3():
 
@@ -166,14 +172,23 @@ def get_fov3():
 class deep_3d_inversor(object):
     def __init__(self, checkpoint=None):
 
+        global nodes, activation_nodes
         # Instantiate the model
-        self.model = model.block(in_planes=30, out_planes=15)
+        self.model = model.block(in_planes=30, out_planes=nodes[0].size + nodes[1].size + nodes[2].size)
         self.checkpoint = torch.load(checkpoint, map_location=lambda storage, loc: storage)
         self.model.load_state_dict(self.checkpoint['state_dict'])    
 
-        normalise_profile_params = np.loadtxt('normalise_profile_params_shock.txt')
+        normalise_profile_params = np.loadtxt(
+            'weights_encdec/normalise_profile_params_{}.txt'.format(
+                activation_nodes
+            )
+        )
 
-        normalise_model_params = np.loadtxt('normalise_model_params_shock.txt')
+        normalise_model_params = np.loadtxt(
+            'weights_encdec/normalise_model_params_{}.txt'.format(
+                activation_nodes
+            )
+        )
 
         self.min_profile = normalise_profile_params[:, 0]
 
@@ -208,21 +223,21 @@ class deep_3d_inversor(object):
             start = time.time()
             output = self.model(input).data
             output = (output * (self.max_model[np.newaxis, :, np.newaxis, np.newaxis] - self.min_model[np.newaxis, :, np.newaxis, np.newaxis]) ) + self.min_model[np.newaxis, :, np.newaxis, np.newaxis]
-            print('Elapsed time : {0} s'.format(time.time()-start))            
+            print('Elapsed time : {0} s'.format(time.time()-start))
 
             output = np.transpose(output, axes=(0, 2, 3, 1))
 
             output = output[:, 7:57, 7:57, :]
 
-            temp = output[:, :, :, 0:5]
+            temp = output[:, :, :, 0:nodes[0].size]
 
-            vlos = output[:, :, :, 5:10]
+            vlos = output[:, :, :, nodes[0].size:nodes[0].size + nodes[1].size]
 
-            vturb = output[:, :, :, 10:14]
+            vturb = output[:, :, :, nodes[0].size + nodes[1].size:nodes[0].size + nodes[1].size + nodes[2].size]
 
-            interp_temp = prepare_evaluate_bezier(ltau[emission_nodes[0]], ltau)
-            interp_vlos = prepare_evaluate_bezier(ltau[emission_nodes[1]], ltau)
-            interp_vturb = prepare_evaluate_bezier(ltau[emission_nodes[2]], ltau)
+            interp_temp = prepare_evaluate_bezier(ltau[nodes[0]], ltau)
+            interp_vlos = prepare_evaluate_bezier(ltau[nodes[1]], ltau)
+            interp_vturb = prepare_evaluate_bezier(ltau[nodes[2]], ltau)
 
             vec_evaluate_temp = np.vectorize(interp_temp, signature='(m)->(n)')
             vec_evaluate_vlos = np.vectorize(interp_vlos, signature='(m)->(n)')
@@ -250,5 +265,7 @@ if __name__ == '__main__':
     os.chdir('/home/harsh/CourseworkRepo/stic/example')
     from prepare_data import *
     os.chdir('/home/harsh/CourseworkRepo/sicon')
+    activation_nodes = sys.argv[1]
+    nodes = get_nodes(activation_nodes)
     deep_network = deep_3d_inversor(checkpoint='weights_encdec/2021-04-25-11:15_-lr_0.0003.pth.best')
     deep_network.evaluate()
