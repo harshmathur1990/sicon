@@ -251,11 +251,11 @@ class deep_3d_inversor(object):
 
             m = sp.model(nx=all_temp.shape[2], ny=all_temp.shape[1], nt=all_temp.shape[0], ndep=150)
 
-            m.ltau[:, :, :] = ltau[indices]
+            m.ltau[:, :, :] = ltau
 
             m.temp = all_temp
 
-            m.pgas[:, :, :] = pgas[indices]
+            m.pgas[:, :, :] = pgas
 
             m.vlos = all_vlos
 
