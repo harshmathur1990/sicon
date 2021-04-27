@@ -253,13 +253,13 @@ class deep_3d_inversor(object):
 
             m.ltau[:, :, :] = ltau[indices]
 
-            m.temp = temp
+            m.temp = all_temp
 
             m.pgas[:, :, :] = pgas[indices]
 
-            m.vlos = vlos
+            m.vlos = all_vlos
 
-            m.vturb = vturb
+            m.vturb = all_vturb
 
             m.write('output_fov_3_{}_neural_net.nc'.format(activation_nodes))
 
