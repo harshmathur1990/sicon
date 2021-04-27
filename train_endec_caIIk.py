@@ -639,11 +639,15 @@ class dataset_spot(torch.utils.data.Dataset):
 
         target = (self.model[:, index] - self.min_model[:, np.newaxis, np.newaxis]) / (self.max_model[:, np.newaxis, np.newaxis] - self.min_model[:, np.newaxis, np.newaxis])
 
+        input = torch.from_numpy(input.astype('float32'))
+
+        target = torch.from_numpy(target.astype('float32'))
+        
         input = nn.functional.pad(input, (7, 7, 7, 7), mode='reflect')
 
         target = nn.functional.pad(target, (7, 7, 7, 7), mode='reflect')
 
-        return input.astype('float32'), target.astype('float32')
+        return input, target
 
     def __len__(self):
         return self.profiles.shape[1]
