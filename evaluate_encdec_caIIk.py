@@ -1,3 +1,7 @@
+import os
+os.chdir('/home/harsh/CourseworkRepo/stic/example')
+from prepare_data import *
+os.chdir('/home/harsh/CourseworkRepo/sicon')
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9,7 +13,6 @@ from torch.nn.modules.module import _addindent
 import h5py
 import time
 import sys
-import os
 import model_encdec as model
 from pathlib import Path
 from cubic_bezier import prepare_evaluate_bezier
@@ -261,9 +264,6 @@ class deep_3d_inversor(object):
             m.write('output_fov_3_{}_neural_net.nc'.format(activation_nodes))
 
 if __name__ == '__main__':
-    os.chdir('/home/harsh/CourseworkRepo/stic/example')
-    from prepare_data import *
-    os.chdir('/home/harsh/CourseworkRepo/sicon')
     activation_nodes = sys.argv[1]
     nodes = get_nodes(activation_nodes)
     deep_network = deep_3d_inversor(checkpoint=sys.argv[2])
