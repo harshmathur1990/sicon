@@ -536,7 +536,8 @@ class dataset_spot(torch.utils.data.Dataset):
         global nodes, activation_nodes
         super(dataset_spot, self).__init__()
 
-        noise_scale = 1e-3
+        print (activation_nodes)
+        print (nodes)
 
         if mode == 'train':
             profiles1, temp1, vlos1, vturb1, pgas1 = get_fov1()
@@ -570,25 +571,25 @@ class dataset_spot(torch.utils.data.Dataset):
 
             self.model = np.vstack([self.temp, self.vlos, self.vturb])  #, self.pgas])
 
-            self.min_profile = np.min(self.profiles, axis=(1, 2, 3))
+            self.mean_profile = np.mean(self.profiles, axis=(1, 2, 3))
 
-            self.max_profile = np.max(self.profiles, axis=(1, 2, 3))
+            self.std_profile = np.std(self.profiles, axis=(1, 2, 3))
 
-            self.min_model = np.min(self.model, axis=(1, 2, 3))
+            self.mean_model = np.mean(self.model, axis=(1, 2, 3))
 
-            self.max_model = np.max(self.model, axis=(1, 2, 3))
+            self.std_model = np.std(self.model, axis=(1, 2, 3))
 
             normalise_profile_params = np.zeros((self.profiles.shape[0], 2), dtype=np.float64)
 
             normalise_model_params = np.zeros((self.model.shape[0], 2), dtype=np.float64)
 
-            normalise_profile_params[:, 0] = self.min_profile
+            normalise_profile_params[:, 0] = self.mean_profile
 
-            normalise_profile_params[:, 1] = self.max_profile
+            normalise_profile_params[:, 1] = self.std_profile
 
-            normalise_model_params[:, 0] = self.min_model
+            normalise_model_params[:, 0] = self.mean_model
 
-            normalise_model_params[:, 1] = self.max_model
+            normalise_model_params[:, 1] = self.std_model
 
             np.savetxt(
                 'weights_encdec/normalise_profile_params_{}.txt'.format(
@@ -646,17 +647,17 @@ class dataset_spot(torch.utils.data.Dataset):
                 )
             )
 
-            self.min_profile = normalise_profile_params[:, 0]
+            self.mean_profile = normalise_profile_params[:, 0]
 
-            self.max_profile = normalise_profile_params[:, 1]
+            self.std_profile = normalise_profile_params[:, 1]
 
-            self.min_model = normalise_model_params[:, 0]
+            self.mean_model = normalise_model_params[:, 0]
 
-            self.max_model = normalise_model_params[:, 1]
+            self.std_model = normalise_model_params[:, 1]
 
-        self.profiles = (self.profiles - self.min_profile[:, np.newaxis, np.newaxis, np.newaxis]) / (self.max_profile[:, np.newaxis, np.newaxis, np.newaxis] - self.min_profile[:, np.newaxis, np.newaxis, np.newaxis])
+        self.profiles = (self.profiles - self.mean_profile[:, np.newaxis, np.newaxis, np.newaxis]) / self.std_profile
 
-        self.model = (self.model - self.min_model[:, np.newaxis, np.newaxis, np.newaxis]) / (self.max_model[:, np.newaxis, np.newaxis, np.newaxis] - self.min_model[:, np.newaxis, np.newaxis, np.newaxis])
+        self.model = (self.model - self.mean_model[:, np.newaxis, np.newaxis, np.newaxis]) / self.std_model
 
         self.profiles = torch.from_numpy(self.profiles.astype('float32'))
 
@@ -669,6 +670,10 @@ class dataset_spot(torch.utils.data.Dataset):
         self.in_planes = self.profiles.shape[0]
 
         self.out_planes = self.model.shape[0]
+
+        print (self.in_planes)
+
+        print (self.out_planes)
 
     def __getitem__(self, index):
 
@@ -714,12 +719,7 @@ class deep_3d_inversor(object):
         print("Network name : {0}".format(self.out_name))
 
         # Copy model
-        shutil.copyfile(model.__file__, '{0}.model.py'.format(self.out_name))        
-
-        # np.savez('{0}.normalization'.format(self.out_name), minimum=self.dataset_train.phys_min, maximum=self.dataset_train.phys_max)        
-
-        # Open the index database
-        # self.db = database.neural_db(label=self.out_name, lr=self.lr, root=root)
+        shutil.copyfile(model.__file__, '{0}.model_{}.py'.format(self.out_name, activation_nodes))
 
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.lr)
         self.lossfn_L2 = nn.MSELoss()
@@ -732,7 +732,7 @@ class deep_3d_inversor(object):
         self.loss_L2_val = []
         best_loss = -1e10
 
-        trainF = open('{0}.loss.csv'.format(self.out_name, self.lr), 'w')
+        trainF = open('{0}.loss_{}.csv'.format(self.out_name, self.lr, activation_nodes), 'w')
 
         data = {'epoch':[], 'loss_l2': [], 'loss_l2_val': []}
 

@@ -219,8 +219,20 @@ class deep_3d_inversor(object):
     def __init__(self, checkpoint=None):
 
         global nodes, activation_nodes
+
+        print (activation_nodes)
+
+        print (nodes)
+
+        self.in_planes = 30
+
+        self.out_planes = nodes[0].size + nodes[1].size + nodes[2].size
+
+        print (self.in_planes)
+
+        print (self.out_planes)
         # Instantiate the model
-        self.model = model.block(in_planes=30, out_planes=nodes[0].size + nodes[1].size + nodes[2].size)
+        self.model = model.block(in_planes=self.in_planes, out_planes=self.out_planes)
         self.checkpoint = torch.load(checkpoint, map_location=lambda storage, loc: storage)
         self.model.load_state_dict(self.checkpoint['state_dict'])    
 
@@ -236,20 +248,20 @@ class deep_3d_inversor(object):
             )
         )
 
-        self.min_profile = normalise_profile_params[:, 0]
+        self.mean_profile = normalise_profile_params[:, 0]
 
-        self.max_profile = normalise_profile_params[:, 1]
+        self.std_profile = normalise_profile_params[:, 1]
 
-        self.min_model = normalise_model_params[:, 0]
+        self.mean_model = normalise_model_params[:, 0]
 
-        self.max_model = normalise_model_params[:, 1]
+        self.std_model = normalise_model_params[:, 1]
     
     def evaluate(self, save_output=False):
 
         # shape = time, wavelength, x, y
         all_profiles = np.transpose(get_fov3(), axes=(0, 3, 1, 2))
 
-        all_profiles = (all_profiles - self.min_profile[np.newaxis, :, np.newaxis, np.newaxis]) / (self.max_profile[np.newaxis, :, np.newaxis, np.newaxis] - self.min_profile[np.newaxis, :, np.newaxis, np.newaxis])
+        all_profiles = (all_profiles - self.mean_profile[np.newaxis, :, np.newaxis, np.newaxis]) / self.std_profile[np.newaxis, :, np.newaxis, np.newaxis]
 
         all_profiles = torch.from_numpy(all_profiles.astype('float32'))
 
@@ -266,7 +278,7 @@ class deep_3d_inversor(object):
             # Evluate the model and rescale the output
             start = time.time()
             output = self.model(input).data
-            output = (output * (self.max_model[np.newaxis, :, np.newaxis, np.newaxis] - self.min_model[np.newaxis, :, np.newaxis, np.newaxis]) ) + self.min_model[np.newaxis, :, np.newaxis, np.newaxis]
+            output = (output * self.std_model[np.newaxis, :, np.newaxis, np.newaxis]) + self.mean_model[np.newaxis, :, np.newaxis, np.newaxis]
             print('Elapsed time : {0} s'.format(time.time()-start))
 
             # shape = time, x, y, logtau

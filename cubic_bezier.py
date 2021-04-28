@@ -52,15 +52,16 @@ def prepare_evaluate_bezier(node_position, log_tau):
             i = 0
             while(i < len(new_node_position) - 1):
                 if (new_node_position[i] == np.NINF):
-                    ind = np.where(log_tau < new_node_position[i + 1])
-                    lt = log_tau[ind]
+
                     curve = curves[i]
-                    
+
                     x2 = new_node_position[i + 2]
                     x1 = new_node_position[i + 1]
-
                     y2 = 1
                     y1 = 0
+
+                    ind = np.where(log_tau < x1)
+                    lt = log_tau[ind]
 
                     indl = np.where( (log_tau >= x1) & (log_tau < x2))
                     ltl = log_tau[indl]
@@ -71,14 +72,15 @@ def prepare_evaluate_bezier(node_position, log_tau):
                     model_values += list(a * lt + b)
 
                 elif (new_node_position[i + 1] == np.Inf):
-                    ind = np.where(log_tau >= new_node_position[i])
-                    lt = log_tau[ind]
                     curve = curves[i - 2]
+
                     x2 = new_node_position[i]
                     x1 = new_node_position[i - 1]
-
                     y2 = 1
                     y1 = 0
+
+                    ind = np.where(log_tau >= new_node_position[i])
+                    lt = log_tau[ind]
 
                     indl = np.where( (log_tau >= x1) & (log_tau < x2))
                     ltl = log_tau[indl]
@@ -89,14 +91,15 @@ def prepare_evaluate_bezier(node_position, log_tau):
                     model_values += list(a * lt + b)
 
                 else:
-                    ind = np.where( (log_tau >= new_node_position[i]) & (log_tau < new_node_position[i + 1]))
-                    lt = log_tau[ind]
                     curve = curves[i - 1]
+
                     x2 = new_node_position[i + 1]
                     x1 = new_node_position[i]
-
                     y2 = 1
                     y1 = 0
+
+                    ind = np.where( (log_tau >=x1) & (log_tau < x2))
+                    lt = log_tau[ind]
 
                     t = ((y2 - y1) * (lt - x1) / (x2 - x1)) + y1
 
