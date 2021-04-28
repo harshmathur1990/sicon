@@ -86,7 +86,7 @@ def prepare_evaluate_bezier(node_position, log_tau, edge_interp=0):
                     lt = log_tau[ind]
 
                     if edge_interp == 0:
-                        model_values += list(no.ones_like(lt) * x2)
+                        model_values += list(np.ones_like(lt) * x2)
                     else:
                         indl = np.where( (log_tau >= x1) & (log_tau < x2))
                         ltl = log_tau[indl]
