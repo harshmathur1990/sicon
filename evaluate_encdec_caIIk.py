@@ -97,13 +97,13 @@ pgas = np.array(
 )
 
 quiet_nodes = [
-    np.array([65, 95, 112, 119, 127, 140]),
+    np.array([65, 95, 112, 127, 140]),
     np.array([140]),
     np.array([68, 97, 112, 128])
 ]
 
 emission_nodes = [
-    np.array([95, 112, 119, 127, 140]),
+    np.array([95, 112, 127, 140]),
     np.array([50, 95, 112, 127, 140]),
     np.array([68, 97, 112, 128])
 ]
@@ -284,7 +284,7 @@ class deep_3d_inversor(object):
 
         all_profiles = (all_profiles - self.mean_profile[np.newaxis, :, np.newaxis, np.newaxis]) / self.std_profile[np.newaxis, :, np.newaxis, np.newaxis]
 
-        all_profiles *= weights_profiles[np.newaxis, :, np.newaxis, np.newaxis]
+        # all_profiles *= weights_profiles[np.newaxis, :, np.newaxis, np.newaxis]
 
         all_profiles = torch.from_numpy(all_profiles.astype('float32'))
 
@@ -301,7 +301,7 @@ class deep_3d_inversor(object):
             # Evluate the model and rescale the output
             start = time.time()
             output = self.model(input).data
-            output /= weights[np.newaxis, :, np.newaxis, np.newaxis]
+            # output /= weights[np.newaxis, :, np.newaxis, np.newaxis]
             output = (output * self.std_model[np.newaxis, :, np.newaxis, np.newaxis]) + self.mean_model[np.newaxis, :, np.newaxis, np.newaxis]
             print('Elapsed time : {0} s'.format(time.time()-start))
 

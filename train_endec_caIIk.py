@@ -19,13 +19,13 @@ from pathlib import Path
 
 
 quiet_nodes = [
-    np.array([65, 95, 112, 119, 127, 140]),
+    np.array([65, 95, 112, 127, 140]),
     np.array([140]),
     np.array([68, 97, 112, 128])
 ]
 
 emission_nodes = [
-    np.array([95, 112, 119, 127, 140]),
+    np.array([95, 112, 127, 140]),
     np.array([50, 95, 112, 127, 140]),
     np.array([68, 97, 112, 128])
 ]
@@ -681,9 +681,9 @@ class dataset_spot(torch.utils.data.Dataset):
 
         self.model = (self.model - self.mean_model[:, np.newaxis, np.newaxis, np.newaxis]) / self.std_model[:, np.newaxis, np.newaxis, np.newaxis]
 
-        self.profiles *= weights_profiles[:, np.newaxis, np.newaxis, np.newaxis]
+        # self.profiles *= weights_profiles[:, np.newaxis, np.newaxis, np.newaxis]
 
-        self.model *= weights[:, np.newaxis, np.newaxis, np.newaxis]
+        # self.model *= weights[:, np.newaxis, np.newaxis, np.newaxis]
 
         self.profiles = torch.from_numpy(self.profiles.astype('float32'))
 
