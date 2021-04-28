@@ -42,7 +42,7 @@ def get_bezier_cubic(points):
     ]
 
 # evalute each cubic curve on the range [0, 1] sliced in n points
-def prepare_evaluate_bezier(node_position, log_tau):
+def prepare_evaluate_bezier(node_position, log_tau, edge_interp=0):
     def evaluate_bezier(nodes):
 
         if node_position.size >=3:
@@ -63,13 +63,16 @@ def prepare_evaluate_bezier(node_position, log_tau):
                     ind = np.where(log_tau < x1)
                     lt = log_tau[ind]
 
-                    indl = np.where( (log_tau >= x1) & (log_tau < x2))
-                    ltl = log_tau[indl]
-                    t = ((y2 - y1) * (ltl - x1) / (x2 - x1)) + y1
+                    if edge_interp == 0:
+                        model_values += np.ones_like(lt) * x1
+                    else:
+                        indl = np.where( (log_tau >= x1) & (log_tau < x2))
+                        ltl = log_tau[indl]
+                        t = ((y2 - y1) * (ltl - x1) / (x2 - x1)) + y1
 
-                    a, b = np.polyfit(ltl, curve(t), 1)
+                        a, b = np.polyfit(ltl, curve(t), 1)
 
-                    model_values += list(a * lt + b)
+                        model_values += list(a * lt + b)
 
                 elif (new_node_position[i + 1] == np.Inf):
                     curve = curves[i - 2]
@@ -82,13 +85,16 @@ def prepare_evaluate_bezier(node_position, log_tau):
                     ind = np.where(log_tau >= new_node_position[i])
                     lt = log_tau[ind]
 
-                    indl = np.where( (log_tau >= x1) & (log_tau < x2))
-                    ltl = log_tau[indl]
-                    t = ((y2 - y1) * (ltl - x1) / (x2 - x1)) + y1
+                    if edge_interp == 0:
+                        model_values += no.ones_like(lt) * x2
+                    else:
+                        indl = np.where( (log_tau >= x1) & (log_tau < x2))
+                        ltl = log_tau[indl]
+                        t = ((y2 - y1) * (ltl - x1) / (x2 - x1)) + y1
 
-                    a, b = np.polyfit(ltl, curve(t), 1)
+                        a, b = np.polyfit(ltl, curve(t), 1)
 
-                    model_values += list(a * lt + b)
+                        model_values += list(a * lt + b)
 
                 else:
                     curve = curves[i - 1]

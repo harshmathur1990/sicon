@@ -109,13 +109,13 @@ emission_nodes = [
 ]
 
 weights_emission = [
-    np.array([0.25, 0.25, 0.167, 0.167, 0.167]),
-    np.array([0.33, 0.167, 0.167, 0.167, 0.167]),
+    np.array([0.15, 0.35, 0.35, 0.15]),
+    np.array([0.2, 0.2, 0.2, 0.2, 0.2]),
     np.array([0.25, 0.25, 0.25, 0.25])
 ]
 
 weights_quiet = [
-    np.array([0.167, 0.167, 0.167, 0.167, 0.167, 0.167]),
+    np.array([0.15, 0.15, 0.28, 0.28, 0.15]),
     np.array([1]),
     np.array([0.25, 0.25, 0.25, 0.25])
 ]
@@ -301,7 +301,7 @@ class deep_3d_inversor(object):
             # Evluate the model and rescale the output
             start = time.time()
             output = self.model(input).data
-            # output /= weights[np.newaxis, :, np.newaxis, np.newaxis]
+            output /= weights[np.newaxis, :, np.newaxis, np.newaxis]
             output = (output * self.std_model[np.newaxis, :, np.newaxis, np.newaxis]) + self.mean_model[np.newaxis, :, np.newaxis, np.newaxis]
             print('Elapsed time : {0} s'.format(time.time()-start))
 
@@ -316,9 +316,9 @@ class deep_3d_inversor(object):
 
             vturb = output[:, :, :, nodes[0].size + nodes[1].size:nodes[0].size + nodes[1].size + nodes[2].size]
 
-            interp_temp = prepare_evaluate_bezier(ltau[nodes[0]], ltau)
-            interp_vlos = prepare_evaluate_bezier(ltau[nodes[1]], ltau)
-            interp_vturb = prepare_evaluate_bezier(ltau[nodes[2]], ltau)
+            interp_temp = prepare_evaluate_bezier(ltau[nodes[0]], ltau, edge_interp=1)
+            interp_vlos = prepare_evaluate_bezier(ltau[nodes[1]], ltau, edge_interp=0)
+            interp_vturb = prepare_evaluate_bezier(ltau[nodes[2]], ltau, edge_interp=0)
 
             vec_evaluate_temp = np.vectorize(interp_temp, signature='(m)->(n)')
             vec_evaluate_vlos = np.vectorize(interp_vlos, signature='(m)->(n)')

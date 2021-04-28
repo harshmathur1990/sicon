@@ -31,13 +31,13 @@ emission_nodes = [
 ]
 
 weights_emission = [
-    np.array([0.25, 0.25, 0.167, 0.167, 0.167]),
-    np.array([0.33, 0.167, 0.167, 0.167, 0.167]),
+    np.array([0.15, 0.35, 0.35, 0.15]),
+    np.array([0.2, 0.2, 0.2, 0.2, 0.2]),
     np.array([0.25, 0.25, 0.25, 0.25])
 ]
 
 weights_quiet = [
-    np.array([0.167, 0.167, 0.167, 0.167, 0.167, 0.167]),
+    np.array([0.15, 0.15, 0.28, 0.28, 0.15]),
     np.array([1]),
     np.array([0.25, 0.25, 0.25, 0.25])
 ]
@@ -683,7 +683,7 @@ class dataset_spot(torch.utils.data.Dataset):
 
         # self.profiles *= weights_profiles[:, np.newaxis, np.newaxis, np.newaxis]
 
-        # self.model *= weights[:, np.newaxis, np.newaxis, np.newaxis]
+        self.model *= weights[:, np.newaxis, np.newaxis, np.newaxis]
 
         self.profiles = torch.from_numpy(self.profiles.astype('float32'))
 
