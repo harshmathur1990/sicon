@@ -42,14 +42,22 @@ weights_quiet = [
     np.array([0.25, 0.25, 0.25, 0.25])
 ]
 
+generic_nodes = [
+    np.array([65, 95, 112, 127, 140]),
+    np.array([65, 95, 112, 127, 140]),
+    np.array([65, 95, 112, 127, 140])
+]
+
 weights_profiles = np.ones(30) * 0.025
 weights_profiles[10:20] = 0.05
 
 def get_nodes(nodename='emission'):
     if nodename == 'emission':
         return emission_nodes
-    else:
+    elif nodename == 'quiet':
         return quiet_nodes
+    else:
+        return generic_nodes
 
 def get_weights(nodename='emission'):
     if nodename == 'emission':
@@ -683,7 +691,7 @@ class dataset_spot(torch.utils.data.Dataset):
 
         # self.profiles *= weights_profiles[:, np.newaxis, np.newaxis, np.newaxis]
 
-        self.model *= weights[:, np.newaxis, np.newaxis, np.newaxis]
+        # self.model *= weights[:, np.newaxis, np.newaxis, np.newaxis]
 
         self.profiles = torch.from_numpy(self.profiles.astype('float32'))
 

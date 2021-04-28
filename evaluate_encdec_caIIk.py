@@ -120,14 +120,22 @@ weights_quiet = [
     np.array([0.25, 0.25, 0.25, 0.25])
 ]
 
+generic_nodes = [
+    np.array([65, 95, 112, 127, 140]),
+    np.array([65, 95, 112, 127, 140]),
+    np.array([65, 95, 112, 127, 140])
+]
+
 weights_profiles = np.ones(30) * 0.025
 weights_profiles[10:20] = 0.05
 
 def get_nodes(nodename='emission'):
     if nodename == 'emission':
         return emission_nodes
-    else:
+    elif nodename == 'quiet':
         return quiet_nodes
+    else:
+        return generic_nodes
 
 def get_weights(nodename='emission'):
     if nodename == 'emission':
@@ -301,7 +309,7 @@ class deep_3d_inversor(object):
             # Evluate the model and rescale the output
             start = time.time()
             output = self.model(input).data
-            output /= weights[np.newaxis, :, np.newaxis, np.newaxis]
+            # output /= weights[np.newaxis, :, np.newaxis, np.newaxis]
             output = (output * self.std_model[np.newaxis, :, np.newaxis, np.newaxis]) + self.mean_model[np.newaxis, :, np.newaxis, np.newaxis]
             print('Elapsed time : {0} s'.format(time.time()-start))
 
