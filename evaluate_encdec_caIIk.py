@@ -108,26 +108,11 @@ emission_nodes = [
     np.array([68, 97, 112, 128])
 ]
 
-weights_emission = [
-    np.array([0.15, 0.35, 0.35, 0.15]),
-    np.array([0.2, 0.2, 0.2, 0.2, 0.2]),
-    np.array([0.25, 0.25, 0.25, 0.25])
-]
-
-weights_quiet = [
-    np.array([0.15, 0.15, 0.28, 0.28, 0.15]),
-    np.array([1]),
-    np.array([0.25, 0.25, 0.25, 0.25])
-]
-
 generic_nodes = [
     np.array([65, 95, 112, 127, 140]),
     np.array([65, 95, 112, 127, 140]),
     np.array([65, 95, 112, 127, 140])
 ]
-
-weights_profiles = np.ones(30) * 0.025
-weights_profiles[10:20] = 0.05
 
 def get_nodes(nodename='emission'):
     if nodename == 'emission':
@@ -136,12 +121,6 @@ def get_nodes(nodename='emission'):
         return quiet_nodes
     else:
         return generic_nodes
-
-def get_weights(nodename='emission'):
-    if nodename == 'emission':
-        return np.concatenate(weights_emission)
-    else:
-        return np.concatenate(weights_quiet)
 
 def get_fov3():
 
@@ -292,8 +271,6 @@ class deep_3d_inversor(object):
 
         all_profiles = (all_profiles - self.mean_profile[np.newaxis, :, np.newaxis, np.newaxis]) / self.std_profile[np.newaxis, :, np.newaxis, np.newaxis]
 
-        # all_profiles *= weights_profiles[np.newaxis, :, np.newaxis, np.newaxis]
-
         all_profiles = torch.from_numpy(all_profiles.astype('float32'))
 
         input = nn.functional.pad(all_profiles, (7, 7, 7, 7), mode='reflect')
@@ -309,7 +286,6 @@ class deep_3d_inversor(object):
             # Evluate the model and rescale the output
             start = time.time()
             output = self.model(input).data
-            # output /= weights[np.newaxis, :, np.newaxis, np.newaxis]
             output = (output * self.std_model[np.newaxis, :, np.newaxis, np.newaxis]) + self.mean_model[np.newaxis, :, np.newaxis, np.newaxis]
             print('Elapsed time : {0} s'.format(time.time()-start))
 
@@ -353,6 +329,5 @@ class deep_3d_inversor(object):
 if __name__ == '__main__':
     activation_nodes = sys.argv[1]
     nodes = get_nodes(activation_nodes)
-    weights = get_weights(activation_nodes)
     deep_network = deep_3d_inversor(checkpoint=sys.argv[2])
     deep_network.evaluate()

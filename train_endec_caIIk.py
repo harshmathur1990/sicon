@@ -30,26 +30,11 @@ emission_nodes = [
     np.array([68, 97, 112, 128])
 ]
 
-weights_emission = [
-    np.array([0.15, 0.35, 0.35, 0.15]),
-    np.array([0.2, 0.2, 0.2, 0.2, 0.2]),
-    np.array([0.25, 0.25, 0.25, 0.25])
-]
-
-weights_quiet = [
-    np.array([0.15, 0.15, 0.28, 0.28, 0.15]),
-    np.array([1]),
-    np.array([0.25, 0.25, 0.25, 0.25])
-]
-
 generic_nodes = [
     np.array([65, 95, 112, 127, 140]),
     np.array([65, 95, 112, 127, 140]),
     np.array([65, 95, 112, 127, 140])
 ]
-
-weights_profiles = np.ones(30) * 0.025
-weights_profiles[10:20] = 0.05
 
 def get_nodes(nodename='emission'):
     if nodename == 'emission':
@@ -58,12 +43,6 @@ def get_nodes(nodename='emission'):
         return quiet_nodes
     else:
         return generic_nodes
-
-def get_weights(nodename='emission'):
-    if nodename == 'emission':
-        return np.concatenate(weights_emission)
-    else:
-        return np.concatenate(weights_quiet)
 
 
 def get_fov1():
@@ -689,10 +668,6 @@ class dataset_spot(torch.utils.data.Dataset):
 
         self.model = (self.model - self.mean_model[:, np.newaxis, np.newaxis, np.newaxis]) / self.std_model[:, np.newaxis, np.newaxis, np.newaxis]
 
-        # self.profiles *= weights_profiles[:, np.newaxis, np.newaxis, np.newaxis]
-
-        # self.model *= weights[:, np.newaxis, np.newaxis, np.newaxis]
-
         self.profiles = torch.from_numpy(self.profiles.astype('float32'))
 
         self.model = torch.from_numpy(self.model.astype('float32'))
@@ -865,6 +840,5 @@ class deep_3d_inversor(object):
 if __name__ == '__main__':
     activation_nodes = sys.argv[1]
     nodes = get_nodes(activation_nodes)
-    weights = get_weights(activation_nodes)
     deep_inversor = deep_3d_inversor()
     deep_inversor.optimize(50, lr=3e-4)
