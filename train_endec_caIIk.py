@@ -755,7 +755,7 @@ class deep_3d_inversor(object):
                 'state_dict': self.model.state_dict(),
                 'best_loss': best_loss,
                 'optimizer': self.optimizer.state_dict(),
-            }, is_best, filename='{0}_{}.pth'.format(self.out_name, activation_nodes))
+            }, is_best, filename='{}_{}.pth'.format(self.out_name, activation_nodes))
 
             # self.db.update(epoch, self.loss_L2[-1], self.loss_L2_val[-1])
 
