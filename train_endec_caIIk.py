@@ -655,9 +655,9 @@ class dataset_spot(torch.utils.data.Dataset):
 
             self.std_model = normalise_model_params[:, 1]
 
-        self.profiles = (self.profiles - self.mean_profile[:, np.newaxis, np.newaxis, np.newaxis]) / self.std_profile
+        self.profiles = (self.profiles - self.mean_profile[:, np.newaxis, np.newaxis, np.newaxis]) / self.std_profile[:, np.newaxis, np.newaxis, np.newaxis]
 
-        self.model = (self.model - self.mean_model[:, np.newaxis, np.newaxis, np.newaxis]) / self.std_model
+        self.model = (self.model - self.mean_model[:, np.newaxis, np.newaxis, np.newaxis]) / self.std_model[:, np.newaxis, np.newaxis, np.newaxis]
 
         self.profiles = torch.from_numpy(self.profiles.astype('float32'))
 
@@ -719,7 +719,7 @@ class deep_3d_inversor(object):
         print("Network name : {0}".format(self.out_name))
 
         # Copy model
-        shutil.copyfile(model.__file__, '{0}.model_{}.py'.format(self.out_name, activation_nodes))
+        shutil.copyfile(model.__file__, '{}.model_{}.py'.format(self.out_name, activation_nodes))
 
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.lr)
         self.lossfn_L2 = nn.MSELoss()
@@ -732,7 +732,7 @@ class deep_3d_inversor(object):
         self.loss_L2_val = []
         best_loss = -1e10
 
-        trainF = open('{0}.loss_{}.csv'.format(self.out_name, self.lr, activation_nodes), 'w')
+        trainF = open('{}.loss_{}.csv'.format(self.out_name, activation_nodes), 'w')
 
         data = {'epoch':[], 'loss_l2': [], 'loss_l2_val': []}
 
@@ -755,7 +755,7 @@ class deep_3d_inversor(object):
                 'state_dict': self.model.state_dict(),
                 'best_loss': best_loss,
                 'optimizer': self.optimizer.state_dict(),
-            }, is_best, filename='{0}.pth'.format(self.out_name, self.lr))
+            }, is_best, filename='{0}_{}.pth'.format(self.out_name, activation_nodes))
 
             # self.db.update(epoch, self.loss_L2[-1], self.loss_L2_val[-1])
 
@@ -764,8 +764,9 @@ class deep_3d_inversor(object):
             self.db = self.db.append(pd.DataFrame(data))
 
         self.db.to_hdf(
-            '{}.h5'.format(
-                self.out_name
+            '{}_{}.h5'.format(
+                self.out_name,
+                activation_nodes
             ),
             'data',
             mode='w'
