@@ -31,9 +31,9 @@ emission_nodes = [
 ]
 
 generic_nodes = [
-    np.array([95, 112, 119, 127, 132, 140]),
-    np.array([50, 95, 112, 119, 127, 132, 140]),
-    np.array([95, 112, 119, 127, 132, 140])
+    np.array([95, 112, 136, 144]),
+    np.array([50, 95, 112, 136, 144]),
+    np.array([95, 112, 136, 144])
 ]
 
 def get_nodes(nodename='emission'):
