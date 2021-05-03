@@ -541,7 +541,7 @@ def get_fov3():
 
 
 class dataset_spot(torch.utils.data.Dataset):
-    def __init__(self, mode='train'):
+    def __init__(self, mode='train', size=10000):
         global nodes, activation_nodes
         super(dataset_spot, self).__init__()
 
@@ -664,6 +664,8 @@ class dataset_spot(torch.utils.data.Dataset):
 
             self.std_model = normalise_model_params[:, 1]
 
+        self.data_indice = np.random.randint(0, self.profiles.shape[1], size=size)
+
         self.profiles = (self.profiles - self.mean_profile[:, np.newaxis, np.newaxis, np.newaxis]) / self.std_profile[:, np.newaxis, np.newaxis, np.newaxis]
 
         self.model = (self.model - self.mean_model[:, np.newaxis, np.newaxis, np.newaxis]) / self.std_model[:, np.newaxis, np.newaxis, np.newaxis]
@@ -686,10 +688,10 @@ class dataset_spot(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
 
-        return self.profiles[:, index], self.model[:, index]
+        return self.profiles[:, self.data_indice[index]], self.model[:, self.data_indice[index]]
 
     def __len__(self):
-        return self.profiles.shape[1]
+        return size
 
 
 def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
@@ -699,12 +701,12 @@ def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
 
 
 class deep_3d_inversor(object):
-    def __init__(self):
+    def __init__(self, training_size=10000, test_size=1000):
 
-        self.dataset_train = dataset_spot(mode='train')
+        self.dataset_train = dataset_spot(mode='train', size=training_size)
         self.train_loader = torch.utils.data.DataLoader(self.dataset_train, shuffle=True)
 
-        self.dataset_test = dataset_spot(mode='test')
+        self.dataset_test = dataset_spot(mode='test', size=test_size)
         self.test_loader = torch.utils.data.DataLoader(self.dataset_test, shuffle=True)  
 
         self.in_planes = self.dataset_train.in_planes   
