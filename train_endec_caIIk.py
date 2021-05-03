@@ -548,6 +548,7 @@ class dataset_spot(torch.utils.data.Dataset):
         print (activation_nodes)
         print (nodes)
 
+        self.size = size
         if mode == 'train':
             profiles1, temp1, vlos1, vturb1, pgas1 = get_fov1()
 
@@ -664,7 +665,7 @@ class dataset_spot(torch.utils.data.Dataset):
 
             self.std_model = normalise_model_params[:, 1]
 
-        self.data_indice = np.random.randint(0, self.profiles.shape[1], size=size)
+        self.data_indice = np.random.randint(0, self.profiles.shape[1], size=self.size)
 
         self.profiles = (self.profiles - self.mean_profile[:, np.newaxis, np.newaxis, np.newaxis]) / self.std_profile[:, np.newaxis, np.newaxis, np.newaxis]
 
@@ -691,7 +692,7 @@ class dataset_spot(torch.utils.data.Dataset):
         return self.profiles[:, self.data_indice[index]], self.model[:, self.data_indice[index]]
 
     def __len__(self):
-        return size
+        return self.size
 
 
 def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
