@@ -702,18 +702,37 @@ def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
 
 
 class deep_3d_inversor(object):
-    def __init__(self, training_size=10000, test_size=1000):
+    def __init__(self, batch_size=128, training_size=10000, test_size=1000):
+        self.cuda = torch.cuda.is_available()
+
+        if self.cuda:
+            import nvidia_smi
+            nvidia_smi.nvmlInit()
+            self.handle = nvidia_smi.nvmlDeviceGetHandleByIndex(0)
+            self.batch_size = batch_size
+            self.device = torch.device("cuda") if self.cuda else None
+            print("Computing in {0}".format(nvidia_smi.nvmlDeviceGetName(self.handle)))
+        else:
+            print ("Computing in CPU")
 
         self.dataset_train = dataset_spot(mode='train', size=training_size)
-        self.train_loader = torch.utils.data.DataLoader(self.dataset_train, shuffle=True)
-
         self.dataset_test = dataset_spot(mode='test', size=test_size)
-        self.test_loader = torch.utils.data.DataLoader(self.dataset_test, shuffle=True)  
+
+        if self.cuda:
+            self.train_loader = torch.utils.data.DataLoader(self.dataset_train, shuffle=True, batch_size=self.batch_size)
+            self.test_loader = torch.utils.data.DataLoader(self.dataset_test, shuffle=True, batch_size=self.batch_size)
+
+        else:
+            self.train_loader = torch.utils.data.DataLoader(self.dataset_train, shuffle=True)
+            self.test_loader = torch.utils.data.DataLoader(self.dataset_test, shuffle=True)
 
         self.in_planes = self.dataset_train.in_planes   
         self.out_planes = self.dataset_train.out_planes
 
-        self.model = model.block(in_planes=self.in_planes, out_planes=self.out_planes)
+        if self.cuda:
+            self.model = model.block(in_planes=self.in_planes, out_planes=self.out_planes).to(self.device)
+        else:
+            self.model = model.block(in_planes=self.in_planes, out_planes=self.out_planes)
 
     def optimize(self, epochs, lr=1e-4):
 
@@ -734,7 +753,11 @@ class deep_3d_inversor(object):
         shutil.copyfile(model.__file__, '{}.model_{}.py'.format(self.out_name, activation_nodes))
 
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.lr)
-        self.lossfn_L2 = nn.MSELoss()
+
+        if self.cuda:
+            self.lossfn_L2 = nn.MSELoss().to(self.device)
+        else:
+            self.lossfn_L2 = nn.MSELoss()
         
         self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer,
                                             step_size=30,
@@ -798,7 +821,9 @@ class deep_3d_inversor(object):
             current_lr = param_group['lr']
 
         for batch_idx, (data, target) in enumerate(t):
-            
+            if self.cuda:
+                data, target = data.to(self.device), target.to(self.device)
+
             self.optimizer.zero_grad()
             output = self.model(data)
             
@@ -812,7 +837,11 @@ class deep_3d_inversor(object):
             loss_L2.backward()
             self.optimizer.step()
 
-            t.set_postfix(loss=loss_L2_avg, lr=current_lr)
+            if self.cuda:
+                tmp = nvidia_smi.nvmlDeviceGetUtilizationRates(self.handle)
+                t.set_postfix(loss=loss_L2_avg, lr=current_lr, gpu=tmp.gpu, mem=tmp.memory)
+            else:
+                t.set_postfix(loss=loss_L2_avg, lr=current_lr)
 
     def test(self):
         self.model.eval()
@@ -828,6 +857,9 @@ class deep_3d_inversor(object):
         with torch.no_grad():
             for batch_idx, (data, target) in enumerate(t):
             
+                if self.cuda:
+                    data, target = data.to(self.device), target.to(self.device)
+
                 output = self.model(data)
             
                 # sum up batch loss
@@ -838,7 +870,11 @@ class deep_3d_inversor(object):
 
                 self.loss_L2_val.append(loss_L2_avg)
         
-                t.set_postfix(loss=loss_L2_avg, lr=current_lr)
+                if self.cuda:
+                    tmp = nvidia_smi.nvmlDeviceGetUtilizationRates(self.handle)
+                    t.set_postfix(loss=loss_L2_avg, lr=current_lr, gpu=tmp.gpu, mem=tmp.memory)
+                else:
+                    t.set_postfix(loss=loss_L2_avg, lr=current_lr)
             
 if __name__ == '__main__':
     activation_nodes = sys.argv[1]
