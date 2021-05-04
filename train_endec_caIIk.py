@@ -701,9 +701,6 @@ class dataset_spot(torch.utils.data.Dataset):
 
         self.out_planes = self.model.shape[0]
 
-        print (self.in_planes)
-
-        print (self.out_planes)
 
     def __getitem__(self, index):
 
