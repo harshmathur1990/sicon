@@ -12,6 +12,7 @@ from tqdm import tqdm
 import model_encdec as model
 import time
 import shutil
+import nvidia_smi
 # import database
 import pandas as pd
 import os
@@ -565,9 +566,6 @@ class dataset_spot(torch.utils.data.Dataset):
         global nodes, activation_nodes
         super(dataset_spot, self).__init__()
 
-        print (activation_nodes)
-        print (nodes)
-
         self.size = size
         if mode == 'train':
             profiles1, temp1, vlos1, vturb1, pgas1 = get_fov1(inversions_path=inversions_path)
@@ -726,7 +724,6 @@ class deep_3d_inversor(object):
         self.cuda = torch.cuda.is_available()
 
         if self.cuda:
-            import nvidia_smi
             nvidia_smi.nvmlInit()
             self.handle = nvidia_smi.nvmlDeviceGetHandleByIndex(0)
             self.batch_size = batch_size
