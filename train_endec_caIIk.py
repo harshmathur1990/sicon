@@ -713,8 +713,7 @@ class dataset_spot(torch.utils.data.Dataset):
 def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
     torch.save(state, filename)
     if is_best:
-        shutil.copyfile(filename, filename+'.best')
-
+        torch.save(state, filename+'.best')
 
 class deep_3d_inversor(object):
     def __init__(self, batch_size=128, training_size=10000, test_size=1000, inversions_path=None):
