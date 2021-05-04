@@ -903,5 +903,10 @@ if __name__ == '__main__':
         inversions_path = Path(sys.argv[2])
     else:
         inversions_path = None
-    deep_inversor = deep_3d_inversor(inversions_path=inversions_path)
+    if len(sys.argv) >= 4:
+        batch_size = int(sys.argv[3])
+    else:
+        batch_size = 128
+
+    deep_inversor = deep_3d_inversor(batch_size=batch_size, inversions_path=inversions_path)
     deep_inversor.optimize(50, lr=3e-4)
