@@ -757,8 +757,8 @@ class deep_3d_inversor(object):
         if not os.path.exists(root):
             os.makedirs(root)
 
-        current_time = time.strftime("%Y-%m-%d-%H:%M")
-        self.out_name = '{2}/{0}_-lr_{1}'.format(current_time, self.lr, root)
+        current_time = time.strftime("%Y_%m_%d_%H_%M")
+        self.out_name = '{2}/{0}_lr_{1}'.format(current_time, self.lr, root)
 
         print("Network name : {0}".format(self.out_name))
 
@@ -823,7 +823,7 @@ class deep_3d_inversor(object):
 
     def train(self, epoch):
         self.model.train()
-        print("Epoch {0}/{1} - {2}".format(epoch, self.n_epochs, time.strftime("%Y-%m-%d-%H:%M:%S")))
+        print("Epoch {0}/{1} - {2}".format(epoch, self.n_epochs, time.strftime("%Y_%m_%d-%H_%M_%S")))
         t = tqdm(self.train_loader)
         
         loss_L2_avg = 0.0
