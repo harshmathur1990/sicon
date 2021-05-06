@@ -200,7 +200,7 @@ def get_fov3():
 def make_plots():
     all_profiles, all_temp, all_vlos, all_vturb, all_pgas = get_fov3()
 
-    f = h5py.File('output_fov_3_generic_neural_net.nc', 'r')
+    f = h5py.File('weights_encdec_v2_gpu/output_fov_3_generic_v2_gpu_neural_net.nc', 'r')
 
     plt.close('all')
 
@@ -210,19 +210,19 @@ def make_plots():
 
     fig, axs = plt.subplots(1, 3, figsize=(19.2, 10.8))
 
-    axs[0].plot(f['ltau500'][0, 0, 0], all_temp[0, 20, 10], label='STiC inversion', color='#364f6B')
-    axs[0].plot(f['ltau500'][0, 0, 0], f['temp'][0, 20, 10], label='Neural-Net', color='#3fC1C9')
-
-    axs[1].plot(f['ltau500'][0, 0, 0], all_vturb[0, 20, 10] / 1e5, label='STiC inversion', color='#364f6B')
-    axs[1].plot(f['ltau500'][0, 0, 0], f['vturb'][0, 20, 10] / 1e5, label='Neural-Net', color='#3fC1C9')
-
-    axs[2].plot(f['ltau500'][0, 0, 0], all_vlos[0, 20, 10] / 1e5, label='STiC inversion', color='#364f6B')
-    axs[2].plot(f['ltau500'][0, 0, 0], f['vlos'][0, 20, 10] / 1e5, label='Neural-Net', color='#3fC1C9')
-
-    axs[0].set_xticklabels([])
-    axs[1].set_xticklabels([])
+    axs[0].plot(f['ltau500'][15, 40, 25], all_temp[15, 40, 25], label='STiC inversion', color='#364f6B')
+    axs[0].plot(f['ltau500'][15, 40, 25], f['temp'][15, 40, 25], label='Neural-Net', color='#3fC1C9')
+    axs[1].plot(f['ltau500'][15, 40, 25], all_vturb[15, 40, 25] / 1e5, label='STiC inversion', color='#364f6B')
+    axs[1].plot(f['ltau500'][15, 40, 25], f['vturb'][15, 40, 25] / 1e5, label='Neural-Net', color='#3fC1C9')
+    axs[2].plot(f['ltau500'][15, 40, 25], all_vlos[15, 40, 25] / 1e5, label='STiC inversion', color='#364f6B')
+    axs[2].plot(f['ltau500'][15, 40, 25], f['vlos'][15, 40, 25] / 1e5, label='Neural-Net', color='#3fC1C9')
     
+    axs[0].set_aspect(1.0 / axs[0].get_data_ratio(), adjustable='box')
+    axs[1].set_aspect(1.0 / axs[1].get_data_ratio(), adjustable='box')
+    axs[2].set_aspect(1.0 / axs[2].get_data_ratio(), adjustable='box')
 
+    axs[0].set_xlabel(r'$log$ $\tau$')
+    axs[1].set_xlabel(r'$log$ $\tau$')
     axs[2].set_xlabel(r'$log$ $\tau$')
 
     axs[0].set_ylabel(r'$T$ $(K)$')
